@@ -325,7 +325,6 @@ class TrafficFlow extends React.Component {
     const connectionToShowDetails = this.state.highlightedObject && this.state.highlightedObject.type === 'connection' ? this.state.highlightedObject : undefined;
     const showLoadingCover = !this.state.currentGraph;
 
-    
 
     let matches;
     if (this.state.currentGraph) {
