@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Alert } from 'react-bootstrap';
 import React from 'react';
 import TWEEN from 'tween.js'; // Start TWEEN updates for sparklines and loading screen fading out
-import Vizceral from 'vizceral-react';
+// import Vizceral from 'vizceral-react';
 import 'vizceral-react/dist/vizceral.css';
 import keypress from 'keypress.js';
 import queryString from 'query-string';
@@ -25,9 +25,13 @@ import UpdateStatus from './updateStatus';
 import filterActions from './filterActions';
 import filterStore from './filterStore';
 
+import Vizceral from '../vizceral-react-wrapper/vizceral';
+
 const listener = new keypress.Listener();
 
 const hasOwnPropFunc = Object.prototype.hasOwnProperty;
+
+const Button = require('react-button');
 
 function animate (time) {
   requestAnimationFrame(animate);
@@ -46,7 +50,7 @@ class TrafficFlow extends React.Component {
       redirectedFrom: undefined,
       selectedChart: undefined,
       displayOptions: {
-        allowDraggingOfNodes: false,
+        allowDraggingOfNodes: true,
         showLabels: true
       },
       currentGraph_physicsOptions: {
@@ -299,6 +303,20 @@ class TrafficFlow extends React.Component {
     this.setState({ redirectedFrom: undefined });
   }
 
+  buttonFuck = () => {
+    const td = this.state.trafficData;
+    const temp = td.connections[0].metrics.normal;
+    td.connections[0].metrics.normal = temp * 0.8;
+    td.secret = 3;  // well, this is a hack
+
+    this.setState({ trafficData: td });
+    this.updateData(td);
+    this.forceUpdate();
+    // this.setState({ currentView: [this.state.currentView[0]] });
+
+    // alert(String(td.connections[0].metrics.normal));
+  }
+
   render () {
     const globalView = this.state.currentView && this.state.currentView.length === 0;
     const nodeView = !globalView && this.state.currentView && this.state.currentView[1] !== undefined;
@@ -306,6 +324,8 @@ class TrafficFlow extends React.Component {
     nodeToShowDetails = nodeToShowDetails || (this.state.highlightedObject && this.state.highlightedObject.type === 'node' ? this.state.highlightedObject : undefined);
     const connectionToShowDetails = this.state.highlightedObject && this.state.highlightedObject.type === 'connection' ? this.state.highlightedObject : undefined;
     const showLoadingCover = !this.state.currentGraph;
+
+    
 
     let matches;
     if (this.state.currentGraph) {
@@ -319,6 +339,8 @@ class TrafficFlow extends React.Component {
 
     return (
       <div className="vizceral-container">
+        <Button onClick={this.buttonFuck} >Come Fuck Around !</Button>
+
         { this.state.redirectedFrom ?
           <Alert onDismiss={this.dismissAlert}>
             <strong>{this.state.redirectedFrom.join('/') || '/'}</strong> does not exist, you were redirected to <strong>{this.state.currentView.join('/') || '/'}</strong> instead
