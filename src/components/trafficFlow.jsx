@@ -312,9 +312,6 @@ class TrafficFlow extends React.Component {
     this.setState({ trafficData: td });
     this.updateData(td);
     this.forceUpdate();
-    // this.setState({ currentView: [this.state.currentView[0]] });
-
-    // alert(String(td.connections[0].metrics.normal));
   }
 
   render () {
