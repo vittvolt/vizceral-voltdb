@@ -18,8 +18,8 @@ function fontsActive () {
 
 // TODO:
 // Start the thread to retrieve latest info from db ?
-const AsyncPolling = require('async-polling');
-const util = require('util');
+// const AsyncPolling = require('async-polling');
+// const util = require('util');
 
 // TODO: Add async-poll here ?
 // AsyncPolling(function (end) {

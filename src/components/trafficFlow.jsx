@@ -164,12 +164,26 @@ class TrafficFlow extends React.Component {
       });
   }
 
+  testTimer () {
+    const td = this.state.trafficData;
+    const temp = td.connections[0].metrics.normal;
+    td.connections[0].metrics.normal = temp * 0.8;
+    td.secret = 3;  // well, this is a hack
+
+    this.setState({ trafficData: td });
+    this.updateData(td);
+    this.forceUpdate();
+  }
+
   componentDidMount () {
     this.checkInitialRoute();
     this.beginSampleData();
 
     // Listen for changes to the stores
     filterStore.addChangeListener(this.filtersChanged);
+
+    // Polling ?
+    setInterval(this.testTimer.bind(this), 3000);
   }
 
   componentWillUnmount () {
