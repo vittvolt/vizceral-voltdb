@@ -2,6 +2,8 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const server = require('http').createServer(app);
+const socket = require('socket.io');
 
 var VoltClient = require('./voltjs/client');
 var VoltConfiguration = require('./voltjs/configuration');
@@ -12,6 +14,8 @@ var AsyncPolling = require('async-polling');
 
 var configs = [];
 var client = new VoltClient(configs);
+
+var num = 1000;
 
 function voltinit() {
   // VoltDB js test
@@ -63,10 +67,9 @@ function eventListener(code, event, message) {
 }
 
 function callProc(num) {
-  var selectProc = new VoltProcedure('tp', ['int']);
+  var selectProc = new VoltProcedure('sel', []);
   var query = selectProc.getQuery();
-  query.setParameters([num]);
-  util.log('checkpoint...')
+  // query.setParameters([num]);
 
   client.callProcedure(query, function initVoter(code, event, results) {
     var val = results.table[0];
@@ -75,15 +78,11 @@ function callProc(num) {
 }
 
 AsyncPolling(function (end) {
-  // Do whatever you want.
   callProc(1);
-  // Then notify the polling when your job is done:
   end();
-  // This will schedule the next call.
 }, 3000).run();
 
 voltinit();
-
 
 console.log(path.resolve('dist', './browser.js'));
 
@@ -113,21 +112,20 @@ app.get('/*', (req, res) => {
   res.sendFile(path.resolve('dist', '.' + req.originalUrl));
 });
 
-app.listen(3000, function () {
-  console.log('Hell yea...');
+
+// Socket.io settings
+var io = socket.listen(server);
+
+io.on('connection', function(socket) {
+  socket.emit('welcome', { message: 'Welcome!', id: socket.id });
+  socket.on('i am client', (d) => {console.log('received i am client from client !')});
 });
 
 
-
-
-// // Configure our HTTP server to respond with Hello World to all requests.
-// var server = http.createServer(function (request, response) {
-//   response.writeHead(200, {"Content-Type": "text/plain"});
-//   response.end("Hello World\n");
+server.listen(3000);
+// app.listen(3000, function () {
+//   console.log('Hell yea...');
 // });
-//
-// // Listen on port 8000, IP defaults to 127.0.0.1
-// server.listen(3000);
 
 // Put a friendly message on the terminal
 console.log("Server running at http://127.0.0.1:3000/");

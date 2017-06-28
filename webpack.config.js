@@ -3,6 +3,18 @@
 var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+var fs = require('fs');
+
+// Hacky way from http://jlongster.com/Backend-Apps-with-Webpack--Part-I#Getting-Started
+// This is needed for building dependency for socket.io
+let nodeModules = {};
+fs.readdirSync('node_modules')
+  .filter(function(x) {
+    return ['.bin'].indexOf(x) === -1;
+  })
+  .forEach(function(mod) {
+    nodeModules[mod] = 'commonjs ' + mod;
+  });
 
 var backendConfig = {
   devtool: 'source-map',
@@ -13,6 +25,7 @@ var backendConfig = {
     publicPath: '/',
     filename: 'backend.js'
   },
+  externals: nodeModules
 };
 
 var browserConfig = {

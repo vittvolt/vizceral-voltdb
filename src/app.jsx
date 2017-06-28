@@ -30,6 +30,15 @@ function fontsActive () {
 //   // This will schedule the next call.
 // }, 3000).run();
 
+var io = require('socket.io-client');
+var socket = io();
+
+socket.on('welcome', function(data) {
+  console.log(data.message + " received welcome in client !");
+  // Respond with a message including this clients' id sent from the server
+  socket.emit('i am client', {data: 'foo!', id: data.id});
+});
+
 // Only load the app once we have the webfonts.
 // This is necessary since we use the fonts for drawing on Canvas'...
 
