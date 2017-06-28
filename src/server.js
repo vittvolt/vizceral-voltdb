@@ -4,6 +4,7 @@ const app = express();
 const path = require('path');
 const server = require('http').createServer(app);
 const socket = require('socket.io');
+const io = socket.listen(server);
 
 var VoltClient = require('./voltjs/client');
 var VoltConfiguration = require('./voltjs/configuration');
@@ -16,6 +17,12 @@ var configs = [];
 var client = new VoltClient(configs);
 
 var num = 1000;
+
+// Store the traffic from a stats table in db
+var trafficData = {
+  normal: 26037,
+  danger: 92
+};
 
 function voltinit() {
   // VoltDB js test
@@ -74,6 +81,10 @@ function callProc(num) {
   client.callProcedure(query, function initVoter(code, event, results) {
     var val = results.table[0];
     util.log('Initialized app for ' + JSON.stringify(val).toString() + ' candidates.');
+    trafficData.normal = val[0].ID;
+    trafficData.danger = val[0].A;
+    io.emit('traffic', trafficData);
+    io.emit('time', { time: new Date().toJSON() });
   });
 }
 
@@ -86,10 +97,10 @@ voltinit();
 
 console.log(path.resolve('dist', './browser.js'));
 
-app.use((req, res, next) => {
-  console.log('Middleware 1...');
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log('Middleware 1...');
+//   next();
+// });
 
 // The index page
 app.get('/', (req, res) => {
@@ -108,16 +119,11 @@ app.get('/fonts/*.css', (req, res) => {
 
 // All the other files should go to the current folder
 app.get('/*', (req, res) => {
-  console.log(path.resolve('dist', '.' + req.originalUrl));
   res.sendFile(path.resolve('dist', '.' + req.originalUrl));
 });
 
 
-// Socket.io settings
-var io = socket.listen(server);
-
 io.on('connection', function(socket) {
-  socket.emit('welcome', { message: 'Welcome!', id: socket.id });
   socket.on('i am client', (d) => {console.log('received i am client from client !')});
 });
 

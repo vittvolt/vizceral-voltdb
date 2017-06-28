@@ -33,6 +33,13 @@ const hasOwnPropFunc = Object.prototype.hasOwnProperty;
 
 const Button = require('react-button');
 
+const io = require('socket.io-client');
+const socket = io();
+socket.on('welcome', function(data) {
+  console.log(data.message + " received welcome in client !");
+  socket.emit('i am client', {data: 'foo!', id: data.id});
+});
+
 function animate (time) {
   requestAnimationFrame(animate);
   TWEEN.update(time);
@@ -183,7 +190,26 @@ class TrafficFlow extends React.Component {
     filterStore.addChangeListener(this.filtersChanged);
 
     // Polling ?
-    setInterval(this.testTimer.bind(this), 3000);
+    // setInterval(this.testTimer.bind(this), 3000);
+
+    socket.on('traffic', function(data) {
+      // Update the traffic data
+      console.log('received traffic msg !!! + ' + data.normal.toString());
+
+      const td = this.state.trafficData;
+      const temp = td.connections[0].metrics.normal;
+      td.connections[0].metrics.normal = data.normal;
+      td.connections[0].metrics.danger = data.danger;
+      td.secret = 3;  // well, this is a hack
+
+      this.setState({ trafficData: td });
+      this.updateData(td);
+      this.forceUpdate();
+    }.bind(this));
+
+    socket.on('time', function(data) {
+      console.log(data.time);
+    }.bind(this));
   }
 
   componentWillUnmount () {
