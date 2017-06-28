@@ -11,14 +11,18 @@
     "dev-server": "webpack-dev-server --host=0.0.0.0 --port=8000 --content-base dist/ --history-api-fallback",
     "dev": "npm-run-all clean --parallel copy:* dev-server",
     "validate": "npm ls",
-    "backend-build": "webpack"
+    "packypacky": "webpack",
+    "build-full": "npm-run-all clean --parallel copy:* packypacky",
+    "full": "node ./dist/backend.js"
   },
   "engines": {
     "node": "~4.4.0"
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "async-polling": "^0.2.1",
     "bootstrap": "^3.3.7",
+    "express": "^4.15.3",
     "flux": "^3.1.0",
     "hammerjs": "^2.0.8",
     "jquery": "^3.1.1",
@@ -37,11 +41,10 @@
     "source-sans-pro": "^2.0.10",
     "superagent": "^3.0.0",
     "tween.js": "^16.3.5",
+    "util": "^0.10.3",
     "vizceral": "^4.5.0",
     "vizceral-react": "^4.4.1",
-    "webfontloader": "^1.6.26",
-    "async-polling": "^0.2.1",
-    "util": "^0.10.3"
+    "webfontloader": "^1.6.26"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
