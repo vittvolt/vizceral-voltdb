@@ -25,14 +25,14 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-let EventEmitter = require('events').EventEmitter,
-  Socket = require('net').Socket,
-  crypto = require('crypto'),
-  util = require('util'),
-  Message = require('./message').Message,
-  VoltConstants = require('./voltconstants');
+var EventEmitter = require('events').EventEmitter, 
+Socket = require('net').Socket,
+crypto = require('crypto'),
+util = require('util'),
+Message = require('./message').Message,
+VoltConstants = require('./voltconstants');
 
-function VoltMessageManager (configuration) {
+function VoltMessageManager(configuration) {
   EventEmitter.call(this);
   this.uid = configuration.uid || null;
   this.message = configuration.message || null;
@@ -44,7 +44,7 @@ function VoltMessageManager (configuration) {
 util.inherits(VoltMessageManager, EventEmitter);
 
 
-function VoltConnection (configuration) {
+function VoltConnection(configuration) {
   EventEmitter.call(this);
   this.config = configuration;
 
@@ -70,156 +70,161 @@ function VoltConnection (configuration) {
   this.invocations = 0;
   this.validConnection = true;
   this.blocked = false;
+  
 }
 
 util.inherits(VoltConnection, EventEmitter);
 
-VoltConnection.prototype.initSocket = function (socket) {
+VoltConnection.prototype.initSocket = function(socket) {
   this.socket = socket;
   this.socket.on('error', this.onError);
   this.socket.on('data', this.onRead);
   this.socket.on('connect', this.onConnect);
-};
+}
 
 
-VoltConnection.prototype.connect = function () {
-  this.initSocket(new Socket());
+VoltConnection.prototype.connect = function() {
+  this.initSocket(new Socket())
   this.socket.connect(this.config.port, this.config.host);
   setInterval(this._manageOustandingQueries, this.config.queryTimeoutInterval);
   setInterval(this._flush, this.config.flushInterval);
-};
+}
 
-VoltConnection.prototype.isValidConnection = function () {
+VoltConnection.prototype.isValidConnection = function() {
   return this.validConnection;
-};
+}
 
-VoltConnection.prototype.isBlocked = function () {
+VoltConnection.prototype.isBlocked = function() {
   return this.blocked;
-};
+}
 
 
 // Deprecating call in favor of callProcedure
-VoltConnection.prototype.call = function (query, readCallback, writeCallback) {
+VoltConnection.prototype.call = function(query, readCallback, writeCallback) {
   return this.callProcedure(query, readCallback, writeCallback);
-};
+}
 
-VoltConnection.prototype.callProcedure = function (query, readCallback, writeCallback) {
+VoltConnection.prototype.callProcedure = function(query, readCallback, writeCallback) {
   this.invocations++;
 
-  const uid = this._getUID();
+  var uid = this._getUID();
   query.setUID(uid);
 
-  const vmm = new VoltMessageManager({
+  var vmm = new VoltMessageManager({
     message: query.getMessage(),
-    uid: uid });
-
-  if (readCallback) {
-    vmm.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE, readCallback);
-    vmm.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR, readCallback);
-  }
-
-  if (writeCallback) {
-    vmm.on(VoltConstants.SESSION_EVENT.QUERY_ALLOWED, writeCallback);
-  }
+    uid: uid});
+    
+    if (readCallback) {
+      vmm.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE, readCallback);
+      vmm.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR, readCallback);
+    }
+    
+    if ( writeCallback ) {
+      vmm.on(VoltConstants.SESSION_EVENT.QUERY_ALLOWED, writeCallback);
+    }
   return this._send(vmm, true);
-};
+}
 
 
-VoltConnection.prototype._getUID = function () {
-  const id = String(this._id < 99999999 ? this._id++ : this._id = 0);
-  const uid = this._zeros(8 - id.length).join('') + id;
+
+VoltConnection.prototype._getUID = function() {
+  var id = String(this._id < 99999999 ? this._id++ : this._id = 0);
+  var uid = this._zeros(8 - id.length).join('') + id;
   return uid;
-};
+}
 
-VoltConnection.prototype._zeros = function (num) {
-  const arr = new Array(num);
-  for (let i = 0; i < num; i++) {
+VoltConnection.prototype._zeros = function(num) {
+  var arr = new Array(num);
+  for(var i = 0; i < num; i++) {
     arr[i] = 0;
   }
   return arr;
-};
+}
 
-VoltConnection.prototype.close = function (callback) {
+VoltConnection.prototype.close = function(callback) {
   this.socket.end();
-};
+}
 
-VoltConnection.prototype.onConnect = function (results) {
-  const service = this.config.service;
-  const sha1 = crypto.createHash('sha1');
+VoltConnection.prototype.onConnect = function(results) {
+  var service = this.config.service;
+  var sha1 = crypto.createHash('sha1');
   sha1.update(this.config.password);
-  const password = new Buffer(sha1.digest('base64'), 'base64');
+  var password = new Buffer(sha1.digest('base64'), 'base64');
 
-  const message = this._getLoginMessage(password);
+  var message = this._getLoginMessage(password);
 
   // you must connect and send login credentials immediately.
-  const vmm = new VoltMessageManager({
+  var vmm = new VoltMessageManager({
     message: message,
     uid: this._getUID()
   });
-
+  
   this._send(vmm, false);
-};
+}
 
-VoltConnection.prototype.onError = function (results) {
+VoltConnection.prototype.onError = function(results) {
   this.emit(
     VoltConstants.SESSION_EVENT.CONNECTION,
     VoltConstants.STATUS_CODES.UNEXPECTED_FAILURE,
     VoltConstants.SESSION_EVENT.CONNECTION,
     this);
-};
+}
 
-VoltConnection.prototype.onRead = function (buffer) {
-  let results = null;
+VoltConnection.prototype.onRead = function(buffer) {
+  var results = null;
 
-  if (this.isLoggedIn == false) {
+  if(this.isLoggedIn == false) {
     results = this._decodeLoginResult(buffer);
     this.isLoggedIn = true;
     this.validConnection = true;
-    this.emit(VoltConstants.SESSION_EVENT.CONNECTION,
-      VoltConstants.STATUS_CODES.SUCCESS,
+    this.emit(VoltConstants.SESSION_EVENT.CONNECTION, 
+      VoltConstants.STATUS_CODES.SUCCESS, 
       VoltConstants.SESSION_EVENT.CONNECTION,
       this);
   } else {
-    const overflow = this._overflow;
-    let data = new Buffer(overflow.length + buffer.length);
-    let length;
+
+    var overflow = this._overflow;
+    var data = new Buffer(overflow.length + buffer.length);
+    var length;
 
     overflow.copy(data, 0);
     buffer.copy(data, overflow.length, 0);
-    while (data.length > 4 && data.length >= (length = Message.readInt(data) + 4)) {
-      const msg = data.slice(0, length);
+    while(data.length > 4 && data.length >= ( length = Message.readInt(data) + 4)) {
+
+      var msg = data.slice(0, length);
       data = data.slice(length);
       results = this._decodeQueryResult(msg);
 
-      const vmm = this._calls[results.uid];
-      if (vmm) {
+      var vmm = this._calls[results.uid];
+      if(vmm) {
         delete this._calls[results.uid];
         this.sendCounter--;
         vmm.emit(VoltConstants.SESSION_EVENT.QUERY_RESPONSE,
-           VoltConstants.STATUS_CODES.SUCCESS,
-           VoltConstants.SESSION_EVENT.QUERY_RESPONSE,
+           VoltConstants.STATUS_CODES.SUCCESS, 
+           VoltConstants.SESSION_EVENT.QUERY_RESPONSE, 
            results);
 
-        if (this.blocked == true) {
-          this.blocked = false;
-          this._invokeWriteEventHandler(vmm);
+        if(this.blocked == true) {
+            this.blocked = false;
+            this._invokeWriteEventHandler(vmm);
         }
+        
       } else {
         this.emit(
+          VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR, 
+          VoltConstants.STATUS_CODES.QUERY_TOOK_TOO_LONG, 
           VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR,
-          VoltConstants.STATUS_CODES.QUERY_TOOK_TOO_LONG,
-          VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR,
-          'Query completed after an extended period but query manager was deleted');
+          "Query completed after an extended period but query manager was deleted" );
       }
     }
     this._overflow = data;
   }
-};
+}
 
-VoltConnection.prototype._send = function (vmm, track) {
-  let results = true;
+VoltConnection.prototype._send = function(vmm, track) {
+  var results = true;
   try {
-    if (track == true) {
+    if(track == true) {
       this._calls[vmm.uid] = vmm;
       this._callIndex.push(vmm.uid);
       vmm.time = Date.now();
@@ -229,33 +234,35 @@ VoltConnection.prototype._send = function (vmm, track) {
 
     this.sendCounter++;
 
-    if (this.blocked == false) {
+    if(this.blocked == false) {
       this._invokeWriteEventHandler(vmm);
     }
   } catch (err) {
-    this.emit(VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR,
-      VoltConstants.STATUS_CODES.UNEXPECTED_FAILURE,
+    this.emit(VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR, 
+      VoltConstants.STATUS_CODES.UNEXPECTED_FAILURE, 
       VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR,
       err.message);
     this.validConnection = false;
     results = false;
   }
   return results;
-};
+}
 
-VoltConnection.prototype._queue = function (buffer, track) {
+VoltConnection.prototype._queue = function(buffer, track) {
   this._sendQueue.push(buffer);
 
-  if (!track || this._sendQueue.length > this.config.messageQueueSize) {
+  if(!track || this._sendQueue.length > this.config.messageQueueSize) {
     this._flush();
   }
 };
 
-VoltConnection.prototype._flush = function () {
-  const bytes = this._sendQueue.reduce((bytes, buffer) => bytes + buffer.length, 0);
-  const combined = new Buffer(bytes);
+VoltConnection.prototype._flush = function() {
+  var bytes = this._sendQueue.reduce(function(bytes, buffer) {
+    return bytes + buffer.length;
+  }, 0);
+  var combined = new Buffer(bytes);
 
-  this._sendQueue.reduce((offset, buffer) => {
+  this._sendQueue.reduce(function(offset, buffer) {
     buffer.copy(combined, offset);
     return offset + buffer.length;
   }, 0);
@@ -264,19 +271,19 @@ VoltConnection.prototype._flush = function () {
     this.socket.write(combined);
   } catch (err) {
     this.emit(VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR,
-      VoltConstants.STATUS_CODES.UNEXPECTED_FAILURE,
+      VoltConstants.STATUS_CODES.UNEXPECTED_FAILURE, 
       VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR,
-      `${err.message
-       }: Connection dropped to server while dispatching query. Is VoltDB Server up?`);
-    throw err;
+      err.message 
+      + ": Connection dropped to server while dispatching query. Is VoltDB Server up?");
+      throw err;
   }
 
   this._sendQueue = [];
 };
 
-VoltConnection.prototype._invokeWriteEventHandler = function (vmm) {
+VoltConnection.prototype._invokeWriteEventHandler = function(vmm) {
   // only allow more writes if the queue has not breached a limit
-  if (this.sendCounter < this.config.maxConsecutiveWrites) {
+  if(this.sendCounter < this.config.maxConsecutiveWrites ) {
     this.blocked = false;
     vmm.emit(VoltConstants.SESSION_EVENT.QUERY_ALLOWED,
       VoltConstants.STATUS_CODES.SUCCESS,
@@ -285,51 +292,52 @@ VoltConnection.prototype._invokeWriteEventHandler = function (vmm) {
   } else {
     this.blocked = true;
   }
-};
+}
 
-VoltConnection.prototype._getLoginMessage = function (password) {
-  const message = new Message();
+VoltConnection.prototype._getLoginMessage = function(password) {
+
+  var message = new Message();
   message.writeString(this.config.service);
   message.writeString(this.config.username);
   message.writeBinary(password);
   message.type = VoltConstants.MESSAGE_TYPE.LOGIN;
   return message;
-};
+}
 
-VoltConnection.prototype._decodeLoginResult = function (buffer) {
+VoltConnection.prototype._decodeLoginResult = function(buffer) {
   return new LoginMessage(buffer);
-};
+}
 
-VoltConnection.prototype._decodeQueryResult = function (buffer) {
+VoltConnection.prototype._decodeQueryResult = function(buffer) {
   return new QueryMessage(buffer);
-};
+}
 
-VoltConnection.prototype._manageOustandingQueries = function () {
-  const tmpCallIndex = [];
-  const time = Date.now();
-  let uid = null;
-  while (uid = this._callIndex.pop()) {
+VoltConnection.prototype._manageOustandingQueries = function() {
+  var tmpCallIndex = [];
+  var time = Date.now();
+  var uid = null;
+  while( uid = this._callIndex.pop()) {
     vmm = this._calls[uid];
-    if (vmm && this._checkQueryTimeout(vmm, time) == false) {
+    if(vmm && this._checkQueryTimeout(vmm, time) == false) {
       tmpCallIndex.push(vmm.uid);
     }
   }
   this._callIndex = tmpCallIndex;
-};
+}
 
-VoltConnection.prototype._checkQueryTimeout = function (vmm, time) {
-  let queryInvalidated = false;
-  if (vmm) {
-    if (time - vmm.time > this.config.queryTimeout) {
+VoltConnection.prototype._checkQueryTimeout = function(vmm, time) {
+  var queryInvalidated = false;
+  if(vmm) {
+    if(time - vmm.time > this.config.queryTimeout) {
       queryInvalidated = true;
       this.sendCounter--;
       vmm.emit(VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR,
         VoltConstants.STATUS_CODES.QUERY_TOOK_TOO_LONG,
         VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR,
-        { error: true,
-          status: VoltConstants.STATUS_CODES.CONNECTION_TIMEOUT,
-          statusString: 'Query timed out before server responded'
-        });
+        {error : true,
+          status : VoltConstants.STATUS_CODES.CONNECTION_TIMEOUT,
+          statusString : 'Query timed out before server responded'
+       });
 
       vmm.emit(VoltConstants.SESSION_EVENT.QUERY_ALLOWED,
         VoltConstants.STATUS_CODES.SUCCESS,
@@ -340,6 +348,6 @@ VoltConnection.prototype._checkQueryTimeout = function (vmm, time) {
   }
 
   return queryInvalidated;
-};
+}
 
 module.exports = VoltConnection;

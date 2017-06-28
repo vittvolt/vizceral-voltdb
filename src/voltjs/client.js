@@ -21,12 +21,12 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-let EventEmitter = require('events').EventEmitter,
-  util = require('util'),
-  VoltConnection = require('./connection'),
-  VoltConstants = require('./voltconstants');
+var EventEmitter = require('events').EventEmitter,
+util = require('util'),
+VoltConnection = require('./connection'),
+VoltConstants = require('./voltconstants');
 
-VoltClient = function (configuration) {
+VoltClient = function(configuration) {
   EventEmitter.call(this);
 
   this.config = configuration;
@@ -37,150 +37,153 @@ VoltClient = function (configuration) {
   this.callProcedure = this.callProcedure.bind(this);
   this.exit = this.connect.bind(this);
   this.connectionStats = this.connectionStats.bind(this);
-
+  
   this._connectListener = this._connectListener.bind(this);
-  this._connectErrorListener = this._connectErrorListener.bind(this);
-  this._queryResponseListener = this._queryResponseListener.bind(this);
-  this._queryResponseErrorListener = this._queryResponseErrorListener.bind(this);
-  this._queryDispatchErrorListener = this._queryDispatchErrorListener.bind(this);
-  this._fatalErrorListener = this._fatalErrorListener.bind(this);
-
+  this._connectErrorListener=this._connectErrorListener.bind(this);
+  this._queryResponseListener=this._queryResponseListener.bind(this);
+  this._queryResponseErrorListener=this._queryResponseErrorListener.bind(this);
+  this._queryDispatchErrorListener=this._queryDispatchErrorListener.bind(this);
+  this._fatalErrorListener=this._fatalErrorListener.bind(this);
+  
   this._connections = [];
   this._badConnections = [];
   this._connectionCounter = 0;
-};
+}
 
 util.inherits(VoltClient, EventEmitter);
 
-VoltClient.prototype.connect = function (callback) {
-  const self = this;
+VoltClient.prototype.connect = function(callback) {
+  var self = this;
 
-  const connectionCount = this.config.length;
-  const connectionResults = [];
-  for (let index = 0; index < this.config.length; index++) {
-    const con = new VoltConnection(this.config[index]);
-
-    con.on(VoltConstants.SESSION_EVENT.CONNECTION, this._connectListener);
+  var connectionCount = this.config.length;
+  var connectionResults = [];
+  for(var index = 0; index < this.config.length; index++) {
+    var con = new VoltConnection(this.config[index]);
+    
+    con.on(VoltConstants.SESSION_EVENT.CONNECTION,this._connectListener);
     con.on(VoltConstants.SESSION_EVENT.CONNECTION, callback);
     con.on(VoltConstants.SESSION_EVENT.CONNECTION_ERROR, callback);
-    con.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE, this._queryResponseListener);
-    con.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR, this._queryResponseErrorListener);
-    con.on(VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR, this._queryDispatchErrorListener);
-    con.on(VoltConstants.SESSION_EVENT.FATAL_ERROR, this._fatalErrorListener);
-
+    con.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE,this._queryResponseListener);
+    con.on(VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR,this._queryResponseErrorListener);
+    con.on(VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR,this._queryDispatchErrorListener);
+    con.on(VoltConstants.SESSION_EVENT.FATAL_ERROR,this._fatalErrorListener);
+    
     con.connect();
   }
-};
+}
 
-VoltClient.prototype._getConnection = function (callback) {
-  const length = this._connections.length;
-  let connection = null;
-  for (let index = 0; index < length; index++) {
+VoltClient.prototype._getConnection = function(callback) {
+  var length = this._connections.length;
+  var connection = null;
+  for(var index = 0; index < length; index++) {
+
     // creates round robin
     this._connectionCounter++;
-    if (this._connectionCounter >= length) {
+    if(this._connectionCounter >= length) {
       this._connectionCounter = 0;
     }
     connection = this._connections[this._connectionCounter];
     // validates that the connection is good and not blocked on reads
-    if (connection == null || connection.isValidConnection() == false) {
+    if(connection == null || connection.isValidConnection() == false) {
       this._badConnections.push(connection);
       this._connections[this._connectionCounter] = null;
-    } else if (connection.isBlocked() == false) {
+    } else if(connection.isBlocked() == false) {
       break;
     }
   }
   return connection;
-};
+}
 
-VoltClient.prototype.callProcedure = function (query, readCallback, writeCallback) {
-  const con = this._getConnection();
-  if (con) {
-    if (con.callProcedure(query, readCallback, writeCallback) == false) {
+VoltClient.prototype.callProcedure = function(query, readCallback, writeCallback) {
+ var con = this._getConnection();
+  if(con) {
+    if(con.callProcedure(query, readCallback, writeCallback) == false) {
       this.emit(VoltConstants.SESSION_EVENT.CONNECTION_ERROR,
         VoltConstants.STATUS_CODES.CONNECTION_TIMEOUT,
         VoltConstants.SESSION_EVENT.CONNECTION_ERROR,
         'Invalid connection in connection pool');
     }
+
   } else {
     this.emit(VoltConstants.SESSION_EVENT.CONNECTION_ERROR,
       VoltConstants.STATUS_CODES.CONNECTION_TIMEOUT,
       VoltConstants.SESSION_EVENT.CONNECTION_ERROR,
       'No valid VoltDB connections, verify that the database is online');
   }
-};
+}
 
-VoltClient.prototype.call = function (query, readCallback, writeCallback) {
+VoltClient.prototype.call = function(query, readCallback, writeCallback) {
   this.callProcedure(query, readCallback, writeCallback);
-};
+}
 
-VoltClient.prototype.exit = function (callback) {
-};
+VoltClient.prototype.exit = function(callback) {
+}
 
-VoltClient.prototype.connectionStats = function () {
+VoltClient.prototype.connectionStats = function() {
   util.log('Good connections:');
   this._displayConnectionArrayStats(this._connections);
 
   util.log('Bad connections:');
   this._displayConnectionArrayStats(this._badConnections);
-};
+}
 
-VoltClient.prototype._displayConnectionArrayStats = function (array) {
-  for (let index = 0; index < array.length; index++) {
-    const connection = array[index];
-    if (connection != null) {
-      util.log('Connection: ',
-      connection.config.host, ': ',
-      connection.invocations, ' Alive: ',
+VoltClient.prototype._displayConnectionArrayStats = function(array) {
+  for(var index = 0; index < array.length; index++) {
+    var connection = array[index];
+    if(connection != null) {
+      util.log('Connection: ', 
+      connection.config.host, ': ', 
+      connection.invocations, ' Alive: ', 
       connection.isValidConnection());
     }
   }
-};
+}
 
-VoltClient.prototype._connectListener = function (code, event, connection) {
-  if (VoltConstants.STATUS_CODES.SUCCESS == code) {
+VoltClient.prototype._connectListener = function(code, event, connection) {
+
+  if ( VoltConstants.STATUS_CODES.SUCCESS == code) {
     this._connections.push(connection);
   }
-
-  this.emit(VoltConstants.SESSION_EVENT.CONNECTION,
-    code,
+  
+  this.emit(VoltConstants.SESSION_EVENT.CONNECTION, 
+    code, 
     event,
     connection.config.host);
-};
+}
 
-VoltClient.prototype._connectErrorListener = function (code, event, message) {
-  this.emit(VoltConstants.SESSION_EVENT.CONNECTION_ERROR,
+VoltClient.prototype._connectErrorListener = function(code, event, message) {
+  this.emit(VoltConstants.SESSION_EVENT.CONNECTION_ERROR, 
     code,
     event,
     message);
-};
+}
 
-VoltClient.prototype._queryResponseListener = function (code, event, message) {
-  this.emit(VoltConstants.SESSION_EVENT.QUERY_RESPONSE,
+VoltClient.prototype._queryResponseListener = function(code,event, message) {
+  this.emit(VoltConstants.SESSION_EVENT.QUERY_RESPONSE, 
     code,
     event,
     message);
-};
+}
 
-VoltClient.prototype._queryResponseErrorListener = function (code, event, message) {
-  this.emit(VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR,
+VoltClient.prototype._queryResponseErrorListener = function(code, event, message) {
+  this.emit(VoltConstants.SESSION_EVENT.QUERY_RESPONSE_ERROR, 
     code,
     event,
     message);
-};
+}
 
-VoltClient.prototype._queryDispatchErrorListener = function (code, event, message) {
-  this.emit(VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR,
+VoltClient.prototype._queryDispatchErrorListener = function(code, event, message) {
+  this.emit(VoltConstants.SESSION_EVENT.QUERY_DISPATCH_ERROR, 
     code,
     event,
     message);
-};
+}
 
-VoltClient.prototype._fatalErrorListener = function (code, event, message) {
-  this.emit(VoltConstants.SESSION_EVENT.FATAL_ERROR,
+VoltClient.prototype._fatalErrorListener = function(code, event, message) {
+  this.emit(VoltConstants.SESSION_EVENT.FATAL_ERROR, 
     code,
-    event,
+    event, 
     message);
-};
+}
 
 module.exports = VoltClient;

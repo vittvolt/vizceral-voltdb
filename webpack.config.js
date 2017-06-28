@@ -4,33 +4,44 @@ var path = require('path');
 var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
-module.exports = {
+var backendConfig = {
+  devtool: 'source-map',
+  target: 'node',
+  entry: './src/server.js',
+  output: {
+    path: path.join(__dirname, 'dist'),
+    publicPath: '/',
+    filename: 'backend.js'
+  },
+};
+
+var browserConfig = {
   devtool: 'source-map',
   entry: './src/app.jsx',
   output: {
     path: path.join(__dirname, 'dist'),
-		publicPath: '/',
-    filename: 'vizceral.[hash].bundle.js'
+    publicPath: '/',
+    filename: 'browser.js'
   },
   resolve: {
-    extensions: ['', '.jsx', '.js'],
-    modulesDirectories: ['node_modules'],
-    fallback: path.join(__dirname, 'node_modules')
+    extensions: ['.jsx', '.js'],
+    enforceExtension: false,
+    modules: [path.join(__dirname, 'node_modules'), 'node_modules']
   },
-  resolveLoader: { fallback: path.join(__dirname, 'node_modules') },
+  resolveLoader: { modules: [path.join(__dirname, 'node_modules')] },
   module: {
     loaders: [
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        loader: 'babel'
+        loader: 'babel-loader'
       },
       { test: /\.woff2?$/, loader: 'url-loader?limit=10000&mimetype=application/font-woff' },
       { test: /\.otf$/, loader: 'file-loader' },
       { test: /\.ttf$/, loader: 'file-loader' },
       { test: /\.eot$/, loader: 'file-loader' },
       { test: /\.svg$/, loader: 'file-loader' },
-      { test: /\.html$/, loader: 'html' },
+      { test: /\.html$/, loader: 'html-loader' },
       { test: /\.css$/, loader: 'style-loader!css-loader' }
     ]
   },
@@ -53,3 +64,5 @@ module.exports = {
     })
   ]
 };
+
+module.exports = [backendConfig, browserConfig];

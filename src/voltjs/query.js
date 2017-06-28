@@ -25,40 +25,39 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-const EventEmitter = require('events').EventEmitter;
-const Message = require('./message').Message;
-
-VoltQuery = function (procName, types) {
+var EventEmitter = require('events').EventEmitter;
+var Message = require('./message').Message;
+VoltQuery = function(procName, types) {
   this.procName = procName;
   this.types = types || [];
   this.parameters = [];
   this.uid = null;
-};
+}
 
-VoltQuery.prototype.setParameters = function (params) {
+VoltQuery.prototype.setParameters = function(params) {
   this.parameters = params;
-};
+}
 
-VoltQuery.prototype.setUID = function (uid) {
+VoltQuery.prototype.setUID = function(uid) {
   this.uid = uid;
-};
+}
 
-VoltQuery.prototype.getMessage = function () {
-  const message = new Message();
+VoltQuery.prototype.getMessage = function() {
+  var message = new Message();
   message.writeString(this.procName);
   message.writeBinary(new Buffer(this.uid));
   message.writeParameterSet(this.types, this.parameters);
   return message;
-};
-VoltProcedure = function (name, types) {
+}
+VoltProcedure = function(name, types) {
   this.name = name;
   this.types = types;
-};
+}
 
-VoltProcedure.prototype.getQuery = function () {
+VoltProcedure.prototype.getQuery = function() {
   return new VoltQuery(this.name, this.types);
-};
+}
 
 module.exports = VoltQuery;
-// remove
+//remove
 module.exports = VoltProcedure;

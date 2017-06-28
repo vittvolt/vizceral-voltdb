@@ -20,18 +20,18 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-VoltConfiguration = function () {
-};
+VoltConfiguration = function() {
+}
 VoltConfiguration.prototype = Object.create({
-  host: 'localhost',
-  port: 21212,
-  username: 'user',
-  password: 'password',
-  service: 'database',
-  queryTimeout: 600000,
+  host : 'localhost',
+  port : 21212,
+  username : 'user',
+  password : 'password',
+  service : 'database',
+  queryTimeout : 600000,
   queryTimeoutInterval: 60000,
   flushInterval: 1000,
-  messageQueueSize: 10,
+  messageQueueSize : 10,
   maxConsecutiveWrites: 5000
 });
 

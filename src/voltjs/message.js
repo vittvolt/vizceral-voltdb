@@ -24,18 +24,18 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-let Parser = require('./parser').Parser,
-  util = require('util'),
-  PRESENT = require('./voltconstants').PRESENT,
-  MESSAGE_TYPE = require('./voltconstants').MESSAGE_TYPE,
-  STATUS_CODE_STRINGS = require('./voltconstants').STATUS_CODE_STRINGS,
-  STATUS_CODES = require('./voltconstants').STATUS_CODES;
+var Parser = require('./parser').Parser,
+util = require('util'),
+PRESENT = require('./voltconstants').PRESENT,
+MESSAGE_TYPE = require('./voltconstants').MESSAGE_TYPE,
+STATUS_CODE_STRINGS = require('./voltconstants').STATUS_CODE_STRINGS,
+STATUS_CODES = require('./voltconstants').STATUS_CODES;
 
-function Message (buffer) {
+function Message(buffer) {
   this.type = MESSAGE_TYPE.UNDEFINED;
   this.error = false;
   Parser.call(this, buffer);
-  if (!buffer) {
+  if(!buffer) {
     this.writeInt(0);
     this.writeByte(0);
   } else {
@@ -45,59 +45,59 @@ function Message (buffer) {
 
 Message.prototype = Object.create(Parser.prototype);
 
-Message.prototype.readHeader = function () {
+Message.prototype.readHeader = function() {
   this.length = this.readInt();
   this.protocol = this.readByte();
 };
 
-Message.prototype.writeHeader = function () {
-  const pos = this.position;
+Message.prototype.writeHeader = function() {
+  var pos = this.position;
   this.position = 0;
   this.writeInt(this.buffer.length - 4);
   this.writeByte(0);
   this.position = pos;
 };
 
-Message.prototype.toBuffer = function () {
+Message.prototype.toBuffer = function() {
   this.writeHeader();
   return new Buffer(this.buffer);
 };
 // for getting lengths from incoming data
-Message.readInt = function (buffer, offset) {
+Message.readInt = function(buffer, offset) {
   return Parser.readInt(buffer, offset);
 };
-LoginMessage = function (buffer) {
+LoginMessage = function(buffer) {
   Message.call(this, buffer);
   this.type = MESSAGE_TYPE.LOGIN;
   this.status = this.readByte();
-  this.error = (this.status !== 0);
-  if (this.error === false) {
+  this.error = (this.status === 0 ? false : true );
+  if(this.error === false) {
     this.serverId = this.readInt();
     this.connectionId = this.readLong();
     this.clusterStartTimestamp = new Date(parseInt(this.readLong().toString()));
     // not microseonds, milliseconds
-    this.leaderIP = `${this.readByte()}.${this.readByte()}.${this.readByte()}.${this.readByte()}`;
+    this.leaderIP = this.readByte() + '.' + this.readByte() + '.' + this.readByte() + '.' + this.readByte();
     this.build = this.readString();
   }
-};
+}
 
 util.inherits(LoginMessage, Message);
 
-const lm = LoginMessage.prototype;
-lm.toString = function () {
+var lm = LoginMessage.prototype;
+lm.toString = function() {
   return {
-    length: this.length,
-    protocol: this.protocol,
-    status: this.status,
-    error: this.error,
-    serverId: this.serverId,
-    connectionId: this.connectionId,
-    clusterStartTimestamp: this.clusterStartTimestamp,
-    leaderIP: this.leaderIP,
-    build: this.build
+    length : this.length,
+    protocol : this.protocol,
+    status : this.status,
+    error : this.error,
+    serverId : this.serverId,
+    connectionId : this.connectionId,
+    clusterStartTimestamp : this.clusterStartTimestamp,
+    leaderIP : this.leaderIP,
+    build : this.build
   };
-};
-QueryMessage = function (buffer) {
+}
+QueryMessage = function(buffer) {
   Message.call(this, buffer);
   this.type = MESSAGE_TYPE.QUERY;
 
@@ -106,51 +106,52 @@ QueryMessage = function (buffer) {
   // bitfield, use PRESENT values to check
   this.status = this.readByte();
   this.statusString = STATUS_CODE_STRINGS[this.status];
-  if (this.fieldsPresent & PRESENT.STATUS) {
+  if(this.fieldsPresent & PRESENT.STATUS) {
     this.statusString = this.readString();
   }
   this.appStatus = this.readByte();
   this.appStatusString = '';
-  if (this.fieldsPresent & PRESENT.APP_STATUS) {
+  if(this.fieldsPresent & PRESENT.APP_STATUS) {
     this.appStatusString = this.readString();
   }
-  this.exception;
+  this.exception
   this.exceptionLength = this.readInt();
-  if (this.fieldsPresent & PRESENT.EXCEPTION) {
+  if(this.fieldsPresent & PRESENT.EXCEPTION) {
     this.exception = this.readException(1);
     // seems size doesn't matter, always 1
   } else {
     // don't parse the rest if there was an exception. Bad material there.
-    const resultCount = this.readShort();
+    var resultCount = this.readShort();
     // there can be more than one table with rows
     this.table = new Array(resultCount);
-    for (let i = 0; i < resultCount; i++) {
+    for(var i = 0; i < resultCount; i++) {
       this.table[i] = this.readVoltTable();
     }
+
   }
-};
+}
 
 util.inherits(QueryMessage, Message);
 
-const qm = QueryMessage.prototype;
+var qm = QueryMessage.prototype;
 
-qm.toString = function () {
+qm.toString = function() {
   return {
-    length: this.length,
-    protocol: this.protocol,
-    status: this.status,
-    error: this.error,
-    uid: this.uid,
-    fieldsPresent: this.fieldsPresent,
-    status: this.status,
-    statusString: this.statusString,
-    appStatus: this.appStatus,
-    appStatusString: this.appStatusString,
-    exception: this.exception,
-    exceptionLength: this.exceptionLength,
-    results: this.results
+    length : this.length,
+    protocol : this.protocol,
+    status : this.status,
+    error : this.error,
+    uid : this.uid,
+    fieldsPresent : this.fieldsPresent,
+    status : this.status,
+    statusString : this.statusString,
+    appStatus : this.appStatus,
+    appStatusString : this.appStatusString,
+    exception : this.exception,
+    exceptionLength : this.exceptionLength,
+    results : this.results
   };
-};
+}
 exports.Message = Message;
 exports.LoginMessage = LoginMessage;
 exports.QueryMessage = QueryMessage;

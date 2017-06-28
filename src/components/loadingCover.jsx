@@ -5,7 +5,8 @@ import TWEEN from 'tween.js';
 
 import './loadingCover.css';
 
-const logo = require('url!./vizceral-mark.png'); // eslint-disable-line import/no-extraneous-dependencies
+// Changed from url to url-loader to accommodate the new versions of webpack
+const logo = require('url-loader!./vizceral-mark.png'); // eslint-disable-line import/no-extraneous-dependencies
 
 const helperStyles = {
   display: 'inline-block',

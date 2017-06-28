@@ -29,7 +29,7 @@
  * The following license applies to all files unless the file is specified below.
  * Each file specified below has its license information embedded in it:
  * tools/jsstyle
- *
+ * 
  * Copyright 2011, Robert Mustacchi. All rights reserved.
  * Copyright 2011, Joyent, Inc. All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,10 +38,10 @@
  * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
  * sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -98,43 +98,54 @@
 /*
  * An 8 bit unsigned integer involves doing no significant work.
  */
-function ruint8 (buffer, endian, offset) {
-  if (endian === undefined) { throw (new Error('missing endian')); }
+function ruint8(buffer, endian, offset)
+{
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
+
+	
+  if(offset >= buffer.length)
+    throw (new Error('Trying to read beyond buffer length'));
 
 
-  if (offset >= buffer.length) { throw (new Error('Trying to read beyond buffer length')); }
 
-
-  return (buffer[offset]);
+	return (buffer[offset]);
 }
 
 /*
  * For 16 bit unsigned numbers we can do all the casting that we want to do.
  */
-function ruint16 (buffer, endian, offset) {
-  let val = 0;
+function ruint16(buffer, endian, offset)
+{
+	var val = 0;
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 1 >= buffer.length) { throw (new Error('Trying to read beyond buffer length')); }
+	if (offset + 1 >= buffer.length)
+		throw (new Error('Trying to read beyond buffer length'));
 
-  if (endian == 'big') {
-    val = buffer[offset] << 8;
-    val |= buffer[offset + 1];
-  } else {
-    val = buffer[offset];
-    val |= buffer[offset + 1] << 8;
-  }
+	if (endian == 'big') {
+		val = buffer[offset] << 8;
+		val |=  buffer[offset+1];
+	} else {
+		val = buffer[offset];
+		val |= buffer[offset+1] << 8;
+	}
 
-  return (val);
+	return (val);
 }
 
 /*
@@ -152,34 +163,40 @@ function ruint16 (buffer, endian, offset) {
 /*
  * Handle the case of losing our MSBit
  */
-function fixu32 (upper, lower) {
-  return ((upper * (1 << 24)) + lower);
+function fixu32(upper, lower)
+{
+	return ((upper * (1 << 24)) + lower);
 }
 
-function ruint32 (buffer, endian, offset) {
-  let val = 0;
+function ruint32(buffer, endian, offset)
+{
+	var val = 0;
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 3 >= buffer.length) { throw (new Error('Trying to read beyond buffer length')); }
+	if (offset + 3 >= buffer.length)
+		throw (new Error('Trying to read beyond buffer length'));
 
-  if (endian == 'big') {
-    val = buffer[offset + 1] << 16;
-    val |= buffer[offset + 2] << 8;
-    val |= buffer[offset + 3];
-    val = fixu32(buffer[offset], val);
-  } else {
-    val = buffer[offset + 2] << 16;
-    val |= buffer[offset + 1] << 8;
-    val |= buffer[offset];
-    val = fixu32(buffer[offset + 3], val);
-  }
+	if (endian == 'big') {
+		val = buffer[offset+1] << 16;
+		val |= buffer[offset+2] << 8;
+		val |= buffer[offset+3];
+		val = fixu32(buffer[offset], val);
+	} else {
+		val = buffer[offset+2] << 16;
+		val |= buffer[offset+1] << 8;
+		val |= buffer[offset];
+		val = fixu32(buffer[offset+3], val);
+	}
 
-  return (val);
+	return (val);
 }
 
 /*
@@ -198,26 +215,31 @@ function ruint32 (buffer, endian, offset) {
  * produce the desired results because of the way Javascript numbers are
  * doubles.
  */
-function ruint64 (buffer, endian, offset) {
-  const val = new Array(2);
+function ruint64(buffer, endian, offset)
+{
+	var val = new Array(2);
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 7 >= buffer.length) { throw (new Error('Trying to read beyond buffer length')); }
+	if (offset + 7 >= buffer.length)
+		throw (new Error('Trying to read beyond buffer length'));
 
-  if (endian == 'big') {
-    val[0] = ruint32(buffer, endian, offset);
-    val[1] = ruint32(buffer, endian, offset + 4);
-  } else {
-    val[0] = ruint32(buffer, endian, offset + 4);
-    val[1] = ruint32(buffer, endian, offset);
-  }
+	if (endian == 'big') {
+		val[0] = ruint32(buffer, endian, offset);
+		val[1] = ruint32(buffer, endian, offset+4);
+	} else {
+		val[0] = ruint32(buffer, endian, offset+4);
+		val[1] = ruint32(buffer, endian, offset);
+	}
 
-  return (val);
+	return (val);
 }
 
 
@@ -276,45 +298,56 @@ function ruint64 (buffer, endian, offset) {
  * this case because the more traditional methods work, but for consistency,
  * we'll keep doing this the same way.
  */
-function rsint8 (buffer, endian, offset) {
-  let neg;
+function rsint8(buffer, endian, offset)
+{
+	var neg;
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset >= buffer.length) { throw (new Error('Trying to read beyond buffer length')); }
+	if (offset >= buffer.length)
+		throw (new Error('Trying to read beyond buffer length'));
 
-  neg = buffer[offset] & 0x80;
+	neg = buffer[offset] & 0x80;
+	
+	if (!neg)
+		return (buffer[offset]);
 
-  if (!neg) { return (buffer[offset]); }
-
-  return ((0xff - buffer[offset] + 1) * -1);
+	return ((0xff - buffer[offset] + 1) * -1);
 }
 
 /*
  * The 16-bit version requires a bit more effort. In this case, we can leverage
  * our unsigned code to generate the value we want to return.
  */
-function rsint16 (buffer, endian, offset) {
-  let neg,
-    val;
+function rsint16(buffer, endian, offset)
+{
+	var neg, val;
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 1 >= buffer.length) { throw (new Error('Trying to read beyond buffer length')); }
+	if (offset + 1 >= buffer.length)
+		throw (new Error('Trying to read beyond buffer length'));
 
-  val = ruint16(buffer, endian, offset);
-  neg = val & 0x8000;
-  if (!neg) { return (val); }
+	val = ruint16(buffer, endian, offset);
+	neg = val & 0x8000;
+	if (!neg)
+		return (val);
 
-  return ((0xffff - val + 1) * -1);
+	return ((0xffff - val + 1) * -1);
 }
 
 /*
@@ -325,52 +358,62 @@ function rsint16 (buffer, endian, offset) {
  * make the 32 bit unsigned code do the optimization. But as long as there
  * aren't floats secretly under the hood for that, we /should/ be okay.
  */
-function rsint32 (buffer, endian, offset) {
-	// console.log('(' + offset + ')');
+function rsint32(buffer, endian, offset)
+{
+	//console.log('(' + offset + ')');
 
-  let neg,
-    val;
+	var neg, val;
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 3 >= buffer.length) { throw (new Error('Trying to read beyond buffer length')); }
+	if (offset + 3 >= buffer.length)
+		throw (new Error('Trying to read beyond buffer length'));
 
-  val = ruint32(buffer, endian, offset);
-  neg = val & 0x80000000;
-  if (!neg) { return (val); }
+	val = ruint32(buffer, endian, offset);
+	neg = val & 0x80000000;
+	if (!neg)
+		return (val);
 
-  return ((0xffffffff - val + 1) * -1);
+	return ((0xffffffff - val + 1) * -1);
 }
 
 /*
  * The signed version of this code suffers from all of the same problems of the
  * other 64 bit version.
  */
-function rsint64 (buffer, endian, offset) {
-  let neg,
-    val;
+function rsint64(buffer, endian, offset)
+{
+	var neg, val;
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 3 >= buffer.length) { throw (new Error('Trying to read beyond buffer length')); }
+	if (offset + 3 >= buffer.length)
+		throw (new Error('Trying to read beyond buffer length'));
 
-  val = ruint64(buffer, endian, offset);
-  neg = val[0] & 0x80000000;
+	val = ruint64(buffer, endian, offset);
+	neg = val[0] & 0x80000000;
 
-  if (!neg) { return (val); }
+	if (!neg)
+		return (val);
 
-  val[0] = (0xffffffff - val[0]) * -1;
-  val[1] = (0xffffffff - val[1] + 1) * -1;
+	val[0] = (0xffffffff - val[0]) * -1;
+	val[1] = (0xffffffff - val[1] + 1) * -1;
 
-  return (val);
+	return (val);
 }
 
 /*
@@ -428,74 +471,81 @@ function rsint64 (buffer, endian, offset) {
  * between the two: i.e. -0 == 0, we just always return 0.
  *
  */
-function rfloat (buffer, endian, offset) {
-  const bytes = [];
-  let sign,
-    exponent,
-    mantissa,
-    val;
-  const bias = 127;
-  const maxexp = 0xff;
+function rfloat(buffer, endian, offset)
+{
+	var bytes = [];
+	var sign, exponent, mantissa, val;
+	var bias = 127;
+	var maxexp = 0xff;
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 3 >= buffer.length) { throw (new Error('Trying to read beyond buffer length')); }
+	if (offset + 3 >= buffer.length)
+		throw (new Error('Trying to read beyond buffer length'));
 
 	/* Normalize the bytes to be in endian order */
-  if (endian == 'big') {
-    bytes[0] = buffer[offset];
-    bytes[1] = buffer[offset + 1];
-    bytes[2] = buffer[offset + 2];
-    bytes[3] = buffer[offset + 3];
-  } else {
-    bytes[3] = buffer[offset];
-    bytes[2] = buffer[offset + 1];
-    bytes[1] = buffer[offset + 2];
-    bytes[0] = buffer[offset + 3];
-  }
+	if (endian == 'big') {
+		bytes[0] = buffer[offset];
+		bytes[1] = buffer[offset+1];
+		bytes[2] = buffer[offset+2];
+		bytes[3] = buffer[offset+3];
+	} else {
+		bytes[3] = buffer[offset];
+		bytes[2] = buffer[offset+1];
+		bytes[1] = buffer[offset+2];
+		bytes[0] = buffer[offset+3];
+	}
 
-  sign = bytes[0] & 0x80;
-  exponent = (bytes[0] & 0x7f) << 1;
-  exponent |= (bytes[1] & 0x80) >>> 7;
-  mantissa = (bytes[1] & 0x7f) << 16;
-  mantissa |= bytes[2] << 8;
-  mantissa |= bytes[3];
+	sign = bytes[0] & 0x80;
+	exponent = (bytes[0] & 0x7f) << 1;
+	exponent |= (bytes[1] & 0x80) >>> 7;
+	mantissa = (bytes[1] & 0x7f) << 16;
+	mantissa |= bytes[2] << 8;
+	mantissa |= bytes[3];
 
 	/* Check for special cases before we do general parsing */
-  if (!sign && exponent == maxexp && mantissa === 0) { return (Number.POSITIVE_INFINITY); }
+	if (!sign && exponent == maxexp && mantissa === 0)
+		return (Number.POSITIVE_INFINITY);
 
-  if (sign && exponent == maxexp && mantissa === 0) { return (Number.NEGATIVE_INFINITY); }
+	if (sign && exponent == maxexp && mantissa === 0)
+		return (Number.NEGATIVE_INFINITY);
 
-  if (exponent == maxexp && mantissa !== 0) { return (Number.NaN); }
+	if (exponent == maxexp && mantissa !== 0)
+		return (Number.NaN);
 
 	/*
 	 * Javascript really doesn't have support for positive or negative zero.
 	 * So we're not going to try and give it to you. That would be just
 	 * plain weird. Besides -0 == 0.
 	 */
-  if (exponent === 0 && mantissa === 0) { return (0); }
+	if (exponent === 0 && mantissa === 0)
+		return (0);
 
 	/*
 	 * Now we can deal with the bias and the determine whether the mantissa
 	 * has the implicit one or not.
 	 */
-  exponent -= bias;
-  if (exponent == -bias) {
-    exponent++;
-    val = 0;
-  } else {
-    val = 1;
-  }
+	exponent -= bias;
+	if (exponent == -bias) {
+		exponent++;
+		val = 0;
+	} else {
+		val = 1;
+	}
 
-  val = (val + mantissa * Math.pow(2, -23)) * Math.pow(2, exponent);
+	val = (val + mantissa * Math.pow(2, -23)) * Math.pow(2, exponent);
 
-  if (sign) { val *= -1; }
+	if (sign)
+		val *= -1;
 
-  return (val);
+	return (val);
 }
 
 /*
@@ -524,52 +574,53 @@ function rfloat (buffer, endian, offset) {
  *	b	is the bias for the exponent
  *
  */
-function rdouble (buffer, endian, offset) {
-  const bytes = [];
-  let sign,
-    exponent,
-    mantissa,
-    val,
-    lowmant;
-  const bias = 1023;
-  const maxexp = 0x7ff;
+function rdouble(buffer, endian, offset)
+{
+	var bytes = [];
+	var sign, exponent, mantissa, val, lowmant;
+	var bias = 1023;
+	var maxexp = 0x7ff;
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 7 >= buffer.length) { throw (new Error('Trying to read beyond buffer length')); }
+	if (offset + 7 >= buffer.length)
+		throw (new Error('Trying to read beyond buffer length'));
 
 	/* Normalize the bytes to be in endian order */
-  if (endian == 'big') {
-    bytes[0] = buffer[offset];
-    bytes[1] = buffer[offset + 1];
-    bytes[2] = buffer[offset + 2];
-    bytes[3] = buffer[offset + 3];
-    bytes[4] = buffer[offset + 4];
-    bytes[5] = buffer[offset + 5];
-    bytes[6] = buffer[offset + 6];
-    bytes[7] = buffer[offset + 7];
-  } else {
-    bytes[7] = buffer[offset];
-    bytes[6] = buffer[offset + 1];
-    bytes[5] = buffer[offset + 2];
-    bytes[4] = buffer[offset + 3];
-    bytes[3] = buffer[offset + 4];
-    bytes[2] = buffer[offset + 5];
-    bytes[1] = buffer[offset + 6];
-    bytes[0] = buffer[offset + 7];
-  }
+	if (endian == 'big') {
+		bytes[0] = buffer[offset];
+		bytes[1] = buffer[offset+1];
+		bytes[2] = buffer[offset+2];
+		bytes[3] = buffer[offset+3];
+		bytes[4] = buffer[offset+4];
+		bytes[5] = buffer[offset+5];
+		bytes[6] = buffer[offset+6];
+		bytes[7] = buffer[offset+7];
+	} else {
+		bytes[7] = buffer[offset];
+		bytes[6] = buffer[offset+1];
+		bytes[5] = buffer[offset+2];
+		bytes[4] = buffer[offset+3];
+		bytes[3] = buffer[offset+4];
+		bytes[2] = buffer[offset+5];
+		bytes[1] = buffer[offset+6];
+		bytes[0] = buffer[offset+7];
+	}
 
 	/*
 	 * We can construct the exponent and mantissa the same way as we did in
 	 * the case of a float, just increase the range of the exponent.
 	 */
-  sign = bytes[0] & 0x80;
-  exponent = (bytes[0] & 0x7f) << 4;
-  exponent |= (bytes[1] & 0xf0) >>> 4;
+	sign = bytes[0] & 0x80;
+	exponent = (bytes[0] & 0x7f) << 4;
+	exponent |= (bytes[1] & 0xf0) >>> 4;
 
 	/*
 	 * This is going to be ugly but then again, we're dealing with IEEE 754.
@@ -583,47 +634,52 @@ function rdouble (buffer, endian, offset) {
 	 * really that great. It's pretty much a giant kludge to deal with
 	 * Javascript eccentricities around numbers.
 	 */
-  lowmant = bytes[7];
-  lowmant |= bytes[6] << 8;
-  lowmant |= bytes[5] << 16;
-  mantissa = bytes[4];
-  mantissa |= bytes[3] << 8;
-  mantissa |= bytes[2] << 16;
-  mantissa |= (bytes[1] & 0x0f) << 24;
-  mantissa *= Math.pow(2, 24); /* Equivalent to << 24, but JS compat */
-  mantissa += lowmant;
+	lowmant = bytes[7];
+	lowmant |= bytes[6] << 8;
+	lowmant |= bytes[5] << 16;
+	mantissa = bytes[4];
+	mantissa |= bytes[3] << 8;
+	mantissa |= bytes[2] << 16;
+	mantissa |= (bytes[1] & 0x0f) << 24;
+	mantissa *= Math.pow(2, 24); /* Equivalent to << 24, but JS compat */
+	mantissa += lowmant;
 
 	/* Check for special cases before we do general parsing */
-  if (!sign && exponent == maxexp && mantissa === 0) { return (Number.POSITIVE_INFINITY); }
+	if (!sign && exponent == maxexp && mantissa === 0)
+		return (Number.POSITIVE_INFINITY);
 
-  if (sign && exponent == maxexp && mantissa === 0) { return (Number.NEGATIVE_INFINITY); }
+	if (sign && exponent == maxexp && mantissa === 0)
+		return (Number.NEGATIVE_INFINITY);
 
-  if (exponent == maxexp && mantissa !== 0) { return (Number.NaN); }
+	if (exponent == maxexp && mantissa !== 0)
+		return (Number.NaN);
 
 	/*
 	 * Javascript really doesn't have support for positive or negative zero.
 	 * So we're not going to try and give it to you. That would be just
 	 * plain weird. Besides -0 == 0.
 	 */
-  if (exponent === 0 && mantissa === 0) { return (0); }
+	if (exponent === 0 && mantissa === 0)
+		return (0);
 
 	/*
 	 * Now we can deal with the bias and the determine whether the mantissa
 	 * has the implicit one or not.
 	 */
-  exponent -= bias;
-  if (exponent == -bias) {
-    exponent++;
-    val = 0;
-  } else {
-    val = 1;
-  }
+	exponent -= bias;
+	if (exponent == -bias) {
+		exponent++;
+		val = 0;
+	} else {
+		val = 1;
+	}
 
-  val = (val + mantissa * Math.pow(2, -52)) * Math.pow(2, exponent);
+	val = (val + mantissa * Math.pow(2, -52)) * Math.pow(2, exponent);
 
-  if (sign) { val *= -1; }
+	if (sign)
+		val *= -1;
 
-  return (val);
+	return (val);
 }
 
 /*
@@ -652,69 +708,82 @@ function rdouble (buffer, endian, offset) {
  *
  *	max		The maximum value
  */
-function prepuint (value, max) {
-  if (typeof (value) !== 'number') { throw (new (Error('cannot write a non-number as a number'))()); }
+function prepuint(value, max)
+{
+	if (typeof (value) != 'number')
+		throw (new (Error('cannot write a non-number as a number')));
 
-  if (value < 0) {
-    throw (new Error('specified a negative value for writing an ' +
+	if (value < 0)
+		throw (new Error('specified a negative value for writing an ' +
 		    'unsigned value'));
-  }
 
-  if (value > max) {
-    throw (new Error('value is larger than maximum value for ' +
+	if (value > max)
+		throw (new Error('value is larger than maximum value for ' +
 		    'type'));
-  }
 
-  if (Math.floor(value) !== value) { throw (new Error('value has a fractional component')); }
+	if (Math.floor(value) !== value)
+		throw (new Error('value has a fractional component'));
 
-  return (value);
+	return (value);
 }
 
 /*
  * 8-bit version, classy. We can ignore endianness which is good.
  */
-function wuint8 (value, endian, buffer, offset) {
-  let val;
+function wuint8(value, endian, buffer, offset)
+{
+	var val;
 
-  if (value === undefined) { throw (new Error('missing value')); }
+	if (value === undefined)
+		throw (new Error('missing value'));
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset >= buffer.length && buffer instanceof Buffer) { throw (new Error('Trying to write beyond buffer length')); }
+	if (offset >= buffer.length && buffer instanceof Buffer)
+		throw (new Error('Trying to write beyond buffer length'));
 
-  val = prepuint(value, 0xff);
-  buffer[offset] = val;
+	val = prepuint(value, 0xff);
+	buffer[offset] = val;
 }
 
 /*
  * Pretty much the same as the 8-bit version, just this time we need to worry
  * about endian related issues.
  */
-function wuint16 (value, endian, buffer, offset) {
-  let val;
+function wuint16(value, endian, buffer, offset)
+{
+	var val;
 
-  if (value === undefined) { throw (new Error('missing value')); }
+	if (value === undefined)
+		throw (new Error('missing value'));
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 1 >= buffer.length && buffer instanceof Buffer) { throw (new Error('Trying to write beyond buffer length')); }
+	if (offset + 1 >= buffer.length && buffer instanceof Buffer)
+		throw (new Error('Trying to write beyond buffer length'));
 
-  val = prepuint(value, 0xffff);
-  if (endian == 'big') {
-    buffer[offset] = (val & 0xff00) >>> 8;
-    buffer[offset + 1] = val & 0x00ff;
-  } else {
-    buffer[offset + 1] = (val & 0xff00) >>> 8;
-    buffer[offset] = val & 0x00ff;
-  }
+	val = prepuint(value, 0xffff);
+	if (endian == 'big') {
+		buffer[offset] = (val & 0xff00) >>> 8;
+		buffer[offset+1] = val & 0x00ff;
+	} else {
+		buffer[offset+1] = (val & 0xff00) >>> 8;
+		buffer[offset] = val & 0x00ff;
+	}
 }
 
 /*
@@ -728,32 +797,38 @@ function wuint16 (value, endian, buffer, offset) {
  * value we'd have to truncate it intelligently, this saves us that problem and
  * may even be somewhat faster under the hood.
  */
-function wuint32 (value, endian, buffer, offset) {
-  let val;
+function wuint32(value, endian, buffer, offset)
+{
+	var val;
 
-  if (value === undefined) { throw (new Error('missing value')); }
+	if (value === undefined)
+		throw (new Error('missing value'));
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 3 >= buffer.length && buffer instanceof Buffer) { throw (new Error('Trying to write beyond buffer length')); }
+	if (offset + 3 >= buffer.length && buffer instanceof Buffer)
+		throw (new Error('Trying to write beyond buffer length'));
 
-  val = prepuint(value, 0xffffffff);
-  if (endian == 'big') {
-    buffer[offset] = (val - (val & 0x00ffffff)) / Math.pow(2, 24);
-    buffer[offset + 1] = (val >>> 16) & 0xff;
-    buffer[offset + 2] = (val >>> 8) & 0xff;
-    buffer[offset + 3] = val & 0xff;
-  } else {
-    buffer[offset + 3] = (val - (val & 0x00ffffff)) /
+	val = prepuint(value, 0xffffffff);
+	if (endian == 'big') {
+		buffer[offset] = (val - (val & 0x00ffffff)) / Math.pow(2, 24);
+		buffer[offset+1] = (val >>> 16) & 0xff;
+		buffer[offset+2] = (val >>> 8) & 0xff;
+		buffer[offset+3] = val & 0xff;
+	} else {
+		buffer[offset+3] = (val - (val & 0x00ffffff)) /
 		    Math.pow(2, 24);
-    buffer[offset + 2] = (val >>> 16) & 0xff;
-    buffer[offset + 1] = (val >>> 8) & 0xff;
-    buffer[offset] = val & 0xff;
-  }
+		buffer[offset+2] = (val >>> 16) & 0xff;
+		buffer[offset+1] = (val >>> 8) & 0xff;
+		buffer[offset] = val & 0xff;
+	}
 }
 
 /*
@@ -761,31 +836,39 @@ function wuint32 (value, endian, buffer, offset) {
  * arrays where value[0] << 32 + value[1] would result in the value that we
  * want.
  */
-function wuint64 (value, endian, buffer, offset) {
-  if (value === undefined) { throw (new Error('missing value')); }
+function wuint64(value, endian, buffer, offset)
+{
+	if (value === undefined)
+		throw (new Error('missing value'));
 
-  if (!(value instanceof Array)) { throw (new Error('value must be an array')); }
+	if (!(value instanceof Array))
+		throw (new Error('value must be an array'));
 
-  if (value.length != 2) { throw (new Error('value must be an array of length 2')); }
+	if (value.length != 2)
+		throw (new Error('value must be an array of length 2'));
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 7 >= buffer.length && buffer instanceof Buffer) { throw (new Error('Trying to write beyond buffer length')); }
+	if (offset + 7 >= buffer.length && buffer instanceof Buffer)
+		throw (new Error('Trying to write beyond buffer length'));
 
-  prepuint(value[0], 0xffffffff);
-  prepuint(value[1], 0xffffffff);
+	prepuint(value[0], 0xffffffff);
+	prepuint(value[1], 0xffffffff);
 
-  if (endian == 'big') {
-    wuint32(value[0], endian, buffer, offset);
-    wuint32(value[1], endian, buffer, offset + 3);
-  } else {
-    wuint32(value[0], endian, buffer, offset + 3);
-    wuint32(value[1], endian, buffer, offset);
-  }
+	if (endian == 'big') {
+		wuint32(value[0], endian, buffer, offset);
+		wuint32(value[1], endian, buffer, offset+3);
+	} else {
+		wuint32(value[0], endian, buffer, offset+3);
+		wuint32(value[1], endian, buffer, offset);
+	}
 }
 
 /*
@@ -836,77 +919,110 @@ function wuint64 (value, endian, buffer, offset) {
 /*
  * A series of checks to make sure we actually have a signed 32-bit number
  */
-function prepsint (value, max, min) {
-  if (typeof (value) !== 'number') { throw (new (Error('cannot write a non-number as a number'))()); }
+function prepsint(value, max, min)
+{
+	if (typeof (value) != 'number')
+		throw (new (Error('cannot write a non-number as a number')));
 
-  if (value > max) { throw (new Error('value larger than maximum allowed value')); }
+	if (value > max)
+		throw (new Error('value larger than maximum allowed value'));
 
-  if (value < min) { throw (new Error('value smaller than minimum allowed value')); }
+	if (value < min)
+		throw (new Error('value smaller than minimum allowed value'));
 
-  if (Math.floor(value) !== value) { throw (new Error('value has a fractional component')); }
+	if (Math.floor(value) !== value)
+		throw (new Error('value has a fractional component'));
 
-  return (value);
+	return (value);
 }
 
 /*
  * The 8-bit version of the signed value. Overall, fairly straightforward.
  */
-function wsint8 (value, endian, buffer, offset) {
-  let val;
+function wsint8(value, endian, buffer, offset)
+{
+	var val;
 
-  if (value === undefined) { throw (new Error('missing value')); }
+	if (value === undefined)
+		throw (new Error('missing value'));
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset >= buffer.length && buffer instanceof Buffer) { throw (new Error('Trying to write beyond buffer length')); }
+	if (offset >= buffer.length && buffer instanceof Buffer)
+		throw (new Error('Trying to write beyond buffer length'));
 
-  val = prepsint(value, 0x7f, -0xf0);
-  if (val >= 0) { wuint8(val, endian, buffer, offset); } else		{ wuint8(0xff + val + 1, endian, buffer, offset); }
+	val = prepsint(value, 0x7f, -0xf0);
+	if (val >= 0)
+		wuint8(val, endian, buffer, offset);
+	else
+		wuint8(0xff + val + 1, endian, buffer, offset);
 }
 
 /*
  * The 16-bit version of the signed value. Also, fairly straightforward.
  */
-function wsint16 (value, endian, buffer, offset) {
-  let val;
+function wsint16(value, endian, buffer, offset)
+{
+	var val;
 
-  if (value === undefined) { throw (new Error('missing value')); }
+	if (value === undefined)
+		throw (new Error('missing value'));
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 1 >= buffer.length && buffer instanceof Buffer) { throw (new Error('Trying to write beyond buffer length')); }
+	if (offset + 1 >= buffer.length && buffer instanceof Buffer)
+		throw (new Error('Trying to write beyond buffer length'));
 
-  val = prepsint(value, 0x7fff, -0xf000);
-  if (val >= 0) { wuint16(val, endian, buffer, offset); } else		{ wuint16(0xffff + val + 1, endian, buffer, offset); }
+	val = prepsint(value, 0x7fff, -0xf000);
+	if (val >= 0)
+		wuint16(val, endian, buffer, offset);
+	else
+		wuint16(0xffff + val + 1, endian, buffer, offset);
+
 }
 
 /*
  * We can do this relatively easily by leveraging the code used for 32-bit
  * unsigned code.
  */
-function wsint32 (value, endian, buffer, offset) {
-  let val;
+function wsint32(value, endian, buffer, offset)
+{
+	var val;
 
-  if (value === undefined) { throw (new Error('missing value')); }
+	if (value === undefined)
+		throw (new Error('missing value'));
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 3 >= buffer.length && buffer instanceof Buffer) { throw (new Error('Trying to write beyond buffer length')); }
+	if (offset + 3 >= buffer.length && buffer instanceof Buffer)
+		throw (new Error('Trying to write beyond buffer length'));
 
-  val = prepsint(value, 0x7fffffff, -0xf0000000);
-  if (val >= 0) { wuint32(val, endian, buffer, offset); } else		{ wuint32(0xffffffff + val + 1, endian, buffer, offset); }
+	val = prepsint(value, 0x7fffffff, -0xf0000000);
+	if (val >= 0)
+		wuint32(val, endian, buffer, offset);
+	else
+		wuint32(0xffffffff + val + 1, endian, buffer, offset);
 }
 
 /*
@@ -914,46 +1030,54 @@ function wsint32 (value, endian, buffer, offset) {
  * Mainly it should ensure that the value is an array of two integers where
  * value[0] << 32 + value[1] is the desired number.
  */
-function wsint64 (value, endian, buffer, offset) {
-  const vals = new Array(2);
+function wsint64(value, endian, buffer, offset)
+{
+	var vals = new Array(2);
 
-  if (value === undefined) { throw (new Error('missing value')); }
+	if (value === undefined)
+		throw (new Error('missing value'));
 
-  if (!(value instanceof Array)) { throw (new Error('value must be an array')); }
+	if (!(value instanceof Array))
+		throw (new Error('value must be an array'));
 
-  if (value.length != 2) { throw (new Error('value must be an array of length 2')); }
+	if (value.length != 2)
+		throw (new Error('value must be an array of length 2'));
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
-  if (offset + 7 >= buffer.length && buffer instanceof Buffer) { throw (new Error('Trying to write beyond buffer length')); }
+	if (offset + 7 >= buffer.length && buffer instanceof Buffer)
+		throw (new Error('Trying to write beyond buffer length'));
 
-  prepsint(value[0], 0x7fffffff, -0xf0000000);
-  prepsint(value[1], 0xffffffff, -0xffffffff);
+	prepsint(value[0], 0x7fffffff, -0xf0000000);
+	prepsint(value[1], 0xffffffff, -0xffffffff);
 
 	/* Fix negative numbers */
-  if (value[0] < 0 || value[1] < 0) {
-    vals[0] = 0xffffffff - Math.abs(value[0]);
-    vals[1] = 0x100000000 - Math.abs(value[1]);
-    if (vals[1] == 0x100000000) {
-      vals[1] = 0;
-      vals[0]++;
-    }
-  } else {
-    vals[0] = value[0];
-    vals[1] = value[1];
-  }
+	if (value[0] < 0 || value[1] < 0) {
+		vals[0] = 0xffffffff - Math.abs(value[0]);
+		vals[1] = 0x100000000 - Math.abs(value[1]);
+		if (vals[1] == 0x100000000) {
+			vals[1] = 0;
+			vals[0]++;
+		}
+	} else {
+		vals[0] = value[0];
+		vals[1] = value[1];
+	}
 
-  if (endian == 'big') {
-    wuint32(vals[0], endian, buffer, offset);
-    wuint32(vals[1], endian, buffer, offset + 4);
-  } else {
-    wuint32(vals[0], endian, buffer, offset + 4);
-    wuint32(vals[1], endian, buffer, offset);
-  }
+	if (endian == 'big') {
+		wuint32(vals[0], endian, buffer, offset);
+		wuint32(vals[1], endian, buffer, offset+4);
+	} else {
+		wuint32(vals[0], endian, buffer, offset+4);
+		wuint32(vals[1], endian, buffer, offset);
+	}
 }
 
 /*
@@ -1029,95 +1153,104 @@ function wsint64 (value, endian, buffer, offset) {
  * iterating and dividing by 2. We may want to come back and revisit that some
  * day.
  */
-function log2 (value) {
-  return (Math.log(value) / Math.log(2));
+function log2(value)
+{
+	return (Math.log(value) / Math.log(2));
 }
 
 /*
  * Helper to determine the exponent of the number we're looking at.
  */
-function intexp (value) {
-  return (Math.floor(log2(value)));
+function intexp(value)
+{
+	return (Math.floor(log2(value)));
 }
 
 /*
  * Helper to determine the exponent of the fractional part of the value.
  */
-function fracexp (value) {
-  return (Math.floor(log2(value)));
+function fracexp(value)
+{
+	return (Math.floor(log2(value)));
 }
 
-function wfloat (value, endian, buffer, offset) {
-  let sign,
-    exponent,
-    mantissa,
-    ebits;
-  const bytes = [];
+function wfloat(value, endian, buffer, offset)
+{
+	var sign, exponent, mantissa, ebits;
+	var bytes = [];
 
-  if (value === undefined) { throw (new Error('missing value')); }
+	if (value === undefined)
+		throw (new Error('missing value'));
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
 
-  if (offset + 3 >= buffer.length && buffer instanceof Buffer) { throw (new Error('Trying to write beyond buffer length')); }
+	if (offset + 3 >= buffer.length && buffer instanceof Buffer)
+		throw (new Error('Trying to write beyond buffer length'));
 
-  if (isNaN(value)) {
-    sign = 0;
-    exponent = 0xff;
-    mantissa = 23;
-  } else if (value == Number.POSITIVE_INFINITY) {
-    sign = 0;
-    exponent = 0xff;
-    mantissa = 0;
-  } else if (value == Number.NEGATIVE_INFINITY) {
-    sign = 1;
-    exponent = 0xff;
-    mantissa = 0;
-  } else {
+	if (isNaN(value)) {
+		sign = 0;
+		exponent = 0xff;
+		mantissa = 23;
+	} else if (value == Number.POSITIVE_INFINITY) {
+		sign = 0;
+		exponent = 0xff;
+		mantissa = 0;
+	} else if (value == Number.NEGATIVE_INFINITY) {
+		sign = 1;
+		exponent = 0xff;
+		mantissa = 0;
+	} else {
 		/* Well we have some work to do */
 
 		/* Thankfully the sign bit is trivial */
-    if (value < 0) {
-      sign = 1;
-      value = Math.abs(value);
-    } else {
-      sign = 0;
-    }
+		if (value < 0) {
+			sign = 1;
+			value = Math.abs(value);
+		} else {
+			sign = 0;
+		}
 
 		/* Use the correct function to determine number of bits */
-    if (value < 1) { ebits = fracexp(value); } else			{ ebits = intexp(value); }
+		if (value < 1)
+			ebits = fracexp(value);
+		else
+			ebits = intexp(value);
 
 		/* Time to deal with the issues surrounding normalization */
-    if (ebits <= -127) {
-      exponent = 0;
-      mantissa = (value * Math.pow(2, 149)) & 0x7fffff;
-    } else {
-      exponent = 127 + ebits;
-      mantissa = value * Math.pow(2, 23 - ebits);
-      mantissa &= 0x7fffff;
-    }
-  }
+		if (ebits <= -127) {
+			exponent = 0;
+			mantissa = (value * Math.pow(2, 149)) & 0x7fffff;
+		} else {
+			exponent = 127 + ebits;
+			mantissa = value * Math.pow(2, 23 - ebits);
+			mantissa &= 0x7fffff;
+		}
+	}
 
-  bytes[0] = sign << 7 | (exponent & 0xfe) >>> 1;
-  bytes[1] = (exponent & 0x01) << 7 | (mantissa & 0x7f0000) >>> 16;
-  bytes[2] = (mantissa & 0x00ff00) >>> 8;
-  bytes[3] = mantissa & 0x0000ff;
+	bytes[0] = sign << 7 | (exponent & 0xfe) >>> 1;
+	bytes[1] = (exponent & 0x01) << 7 | (mantissa & 0x7f0000) >>> 16;
+	bytes[2] = (mantissa & 0x00ff00) >>> 8;
+	bytes[3] = mantissa & 0x0000ff;
 
-  if (endian == 'big') {
-    buffer[offset] = bytes[0];
-    buffer[offset + 1] = bytes[1];
-    buffer[offset + 2] = bytes[2];
-    buffer[offset + 3] = bytes[3];
-  } else {
-    buffer[offset] = bytes[3];
-    buffer[offset + 1] = bytes[2];
-    buffer[offset + 2] = bytes[1];
-    buffer[offset + 3] = bytes[0];
-  }
+	if (endian == 'big') {
+		buffer[offset] = bytes[0];
+		buffer[offset+1] = bytes[1];
+		buffer[offset+2] = bytes[2];
+		buffer[offset+3] = bytes[3];
+	} else {
+		buffer[offset] = bytes[3];
+		buffer[offset+1] = bytes[2];
+		buffer[offset+2] = bytes[1];
+		buffer[offset+3] = bytes[0];
+	}
 }
 
 /*
@@ -1180,49 +1313,55 @@ function wfloat (value, endian, buffer, offset) {
  * that's ugly, but it seems to avoid using floating point (just based on how v8
  * seems to be optimizing for base 2 arithmetic).
  */
-function wdouble (value, endian, buffer, offset) {
-  let sign,
-    exponent,
-    mantissa,
-    ebits;
-  const bytes = [];
+function wdouble(value, endian, buffer, offset)
+{
+	var sign, exponent, mantissa, ebits;
+	var bytes = [];
 
-  if (value === undefined) { throw (new Error('missing value')); }
+	if (value === undefined)
+		throw (new Error('missing value'));
 
-  if (endian === undefined) { throw (new Error('missing endian')); }
+	if (endian === undefined)
+		throw (new Error('missing endian'));
 
-  if (buffer === undefined) { throw (new Error('missing buffer')); }
+	if (buffer === undefined)
+		throw (new Error('missing buffer'));
 
-  if (offset === undefined) { throw (new Error('missing offset')); }
+	if (offset === undefined)
+		throw (new Error('missing offset'));
 
 
-  if (offset + 7 >= buffer.length && buffer instanceof Buffer) { throw (new Error('Trying to write beyond buffer length')); }
+	if (offset + 7 >= buffer.length && buffer instanceof Buffer)
+		throw (new Error('Trying to write beyond buffer length'));
 
-  if (isNaN(value)) {
-    sign = 0;
-    exponent = 0x7ff;
-    mantissa = 23;
-  } else if (value == Number.POSITIVE_INFINITY) {
-    sign = 0;
-    exponent = 0x7ff;
-    mantissa = 0;
-  } else if (value == Number.NEGATIVE_INFINITY) {
-    sign = 1;
-    exponent = 0x7ff;
-    mantissa = 0;
-  } else {
+	if (isNaN(value)) {
+		sign = 0;
+		exponent = 0x7ff;
+		mantissa = 23;
+	} else if (value == Number.POSITIVE_INFINITY) {
+		sign = 0;
+		exponent = 0x7ff;
+		mantissa = 0;
+	} else if (value == Number.NEGATIVE_INFINITY) {
+		sign = 1;
+		exponent = 0x7ff;
+		mantissa = 0;
+	} else {
 		/* Well we have some work to do */
 
 		/* Thankfully the sign bit is trivial */
-    if (value < 0) {
-      sign = 1;
-      value = Math.abs(value);
-    } else {
-      sign = 0;
-    }
+		if (value < 0) {
+			sign = 1;
+			value = Math.abs(value);
+		} else {
+			sign = 0;
+		}
 
 		/* Use the correct function to determine number of bits */
-    if (value < 1) { ebits = fracexp(value); } else			{ ebits = intexp(value); }
+		if (value < 1)
+			ebits = fracexp(value);
+		else
+			ebits = intexp(value);
 
 		/*
 		 * This is a total hack to determine a denormalized value.
@@ -1245,11 +1384,11 @@ function wdouble (value, endian, buffer, offset) {
 		 * Does not cause us to overflow. Go figure.
 		 *
 		 */
-    if (value <= 2.225073858507201e-308 || ebits <= -1023) {
-      exponent = 0;
-      mantissa = value * Math.pow(2, 1023) * Math.pow(2, 51);
-      mantissa %= Math.pow(2, 52);
-    } else {
+		if (value <= 2.225073858507201e-308 || ebits <= -1023) {
+			exponent = 0;
+			mantissa = value * Math.pow(2, 1023) * Math.pow(2, 51);
+			mantissa %= Math.pow(2, 52);
+		} else {
 			/*
 			 * We might have gotten fucked by our floating point
 			 * logarithm magic. This is rather crappy, but that's
@@ -1258,44 +1397,45 @@ function wdouble (value, endian, buffer, offset) {
 			 * been much easier and we wouldn't have such stupid
 			 * kludges or hacks.
 			 */
-      if (ebits > 1023) { ebits = 1023; }
-      exponent = 1023 + ebits;
-      mantissa = value * Math.pow(2, -ebits);
-      mantissa *= Math.pow(2, 52);
-      mantissa %= Math.pow(2, 52);
-    }
-  }
+			if (ebits > 1023)
+				ebits = 1023;
+			exponent = 1023 + ebits;
+			mantissa = value * Math.pow(2, -ebits);
+			mantissa *= Math.pow(2, 52);
+			mantissa %= Math.pow(2, 52);
+		}
+	}
 
 	/* Fill the bytes in backwards to deal with the size issues */
-  bytes[7] = mantissa & 0xff;
-  bytes[6] = (mantissa >>> 8) & 0xff;
-  bytes[5] = (mantissa >>> 16) & 0xff;
-  mantissa = (mantissa - (mantissa & 0xffffff)) / Math.pow(2, 24);
-  bytes[4] = mantissa & 0xff;
-  bytes[3] = (mantissa >>> 8) & 0xff;
-  bytes[2] = (mantissa >>> 16) & 0xff;
-  bytes[1] = (exponent & 0x00f) << 4 | mantissa >>> 24;
-  bytes[0] = (sign << 7) | (exponent & 0x7f0) >>> 4;
+	bytes[7] = mantissa & 0xff;
+	bytes[6] = (mantissa >>> 8) & 0xff;
+	bytes[5] = (mantissa >>> 16) & 0xff;
+	mantissa = (mantissa - (mantissa & 0xffffff)) / Math.pow(2, 24);
+	bytes[4] = mantissa & 0xff;
+	bytes[3] = (mantissa >>> 8) & 0xff;
+	bytes[2] = (mantissa >>> 16) & 0xff;
+	bytes[1] = (exponent & 0x00f) << 4 | mantissa >>> 24;
+	bytes[0] = (sign << 7) | (exponent & 0x7f0) >>> 4;
 
-  if (endian == 'big') {
-    buffer[offset] = bytes[0];
-    buffer[offset + 1] = bytes[1];
-    buffer[offset + 2] = bytes[2];
-    buffer[offset + 3] = bytes[3];
-    buffer[offset + 4] = bytes[4];
-    buffer[offset + 5] = bytes[5];
-    buffer[offset + 6] = bytes[6];
-    buffer[offset + 7] = bytes[7];
-  } else {
-    buffer[offset + 7] = bytes[0];
-    buffer[offset + 6] = bytes[1];
-    buffer[offset + 5] = bytes[2];
-    buffer[offset + 4] = bytes[3];
-    buffer[offset + 3] = bytes[4];
-    buffer[offset + 2] = bytes[5];
-    buffer[offset + 1] = bytes[6];
-    buffer[offset] = bytes[7];
-  }
+	if (endian == 'big') {
+		buffer[offset] = bytes[0];
+		buffer[offset+1] = bytes[1];
+		buffer[offset+2] = bytes[2];
+		buffer[offset+3] = bytes[3];
+		buffer[offset+4] = bytes[4];
+		buffer[offset+5] = bytes[5];
+		buffer[offset+6] = bytes[6];
+		buffer[offset+7] = bytes[7];
+	} else {
+		buffer[offset+7] = bytes[0];
+		buffer[offset+6] = bytes[1];
+		buffer[offset+5] = bytes[2];
+		buffer[offset+4] = bytes[3];
+		buffer[offset+3] = bytes[4];
+		buffer[offset+2] = bytes[5];
+		buffer[offset+1] = bytes[6];
+		buffer[offset] = bytes[7];
+	}
 }
 
 /*
