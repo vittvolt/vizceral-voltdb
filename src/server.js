@@ -73,25 +73,36 @@ function eventListener(code, event, message) {
     message));
 }
 
-function callProc(num) {
+function callProc() {
   var selectProc = new VoltProcedure('sel', []);
+  var statsProc = new VoltProcedure('@Statistics', ['string', 'int']);
   var query = selectProc.getQuery();
-  // query.setParameters([num]);
+  var statsQuery = statsProc.getQuery();
+  statsQuery.setParameters(["PROCEDURE", 0]); // host number given as 2nd parameter
 
   client.callProcedure(query, function initVoter(code, event, results) {
     var val = results.table[0];
     util.log('Initialized app for ' + JSON.stringify(val).toString() + ' candidates.');
-    trafficData.normal = val[0].ID;
-    trafficData.danger = val[0].A;
+    // trafficData.normal = val[0].ID;
+    // trafficData.danger = val[0].A;
     io.emit('traffic', trafficData);
     io.emit('time', { time: new Date().toJSON() });
   });
-}
 
-AsyncPolling(function (end) {
-  callProc(1);
-  end();
-}, 3000).run();
+  client.callProcedure(statsQuery, function initVoter(code, event, results) {
+    var val = results.table[0];
+    util.log(JSON.stringify(val));
+
+    // Traverse through the stats for each site on the specified host
+    // let k;
+    // for (k in val) {
+    //   trafficData.normal += k.INVOCATIONS;
+    // }
+    // io.emit('traffic', trafficData);
+    // trafficData.normal = 0;
+    // trafficData.danger = 0;
+  });
+}
 
 voltinit();
 
@@ -135,3 +146,9 @@ server.listen(3000);
 
 // Put a friendly message on the terminal
 console.log("Server running at http://127.0.0.1:3000/");
+
+
+AsyncPolling(function (end) {
+  callProc();
+  end();
+}, 3000).run();
