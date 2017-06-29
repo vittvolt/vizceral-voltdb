@@ -10,7 +10,7 @@
     {
       "renderer": "region",
       "name": "Host-0",
-      "maxVolume": 5000,
+      "maxVolume": 900,
       "class": "normal",
       "updated": 1466838546805,
       "nodes": [
