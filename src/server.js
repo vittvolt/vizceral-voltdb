@@ -24,6 +24,11 @@ var trafficData = {
   danger: 92
 };
 
+var trafficData_diff = {
+  normal: 1,
+  danger: 1
+}
+
 function voltinit() {
   // VoltDB js test
   // volt = require('../voter/voter/models/volt');
@@ -54,7 +59,6 @@ function voltinit() {
   // The second handler is more for catastrophic failures.
   client.connect(function startup(code, event,results) {
     util.log('Node connected to VoltDB');
-    callProc(2);
   }, function loginError(code, event, results) {
     util.log('Node did not connect to VoltDB');
   });
@@ -85,22 +89,28 @@ function callProc() {
     util.log('Initialized app for ' + JSON.stringify(val).toString() + ' candidates.');
     // trafficData.normal = val[0].ID;
     // trafficData.danger = val[0].A;
-    io.emit('traffic', trafficData);
     io.emit('time', { time: new Date().toJSON() });
   });
 
   client.callProcedure(statsQuery, function initVoter(code, event, results) {
     var val = results.table[0];
-    util.log(JSON.stringify(val));
 
     // Traverse through the stats for each site on the specified host
-    // let k;
-    // for (k in val) {
-    //   trafficData.normal += k.INVOCATIONS;
-    // }
-    // io.emit('traffic', trafficData);
-    // trafficData.normal = 0;
-    // trafficData.danger = 0;
+    let k;
+    let sum = 0;
+    for (k = 0; k < val.length; k++) {
+      sum += val[k].INVOCATIONS;
+    }
+    let normal_flow = sum - trafficData.normal;
+
+    console.log('diff: ' + normal_flow);
+
+    trafficData_diff.normal = (normal_flow > 5) ? normal_flow : 5;
+    io.emit('traffic', trafficData_diff);
+    trafficData.normal = sum;
+    trafficData.danger = 5;
+    trafficData_diff.normal = 5;
+    trafficData_diff.danger = 0;
   });
 }
 
@@ -151,4 +161,4 @@ console.log("Server running at http://127.0.0.1:3000/");
 AsyncPolling(function (end) {
   callProc();
   end();
-}, 3000).run();
+}, 1000).run();

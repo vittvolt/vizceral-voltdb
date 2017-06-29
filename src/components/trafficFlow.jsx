@@ -194,7 +194,7 @@ class TrafficFlow extends React.Component {
 
     socket.on('traffic', function(data) {
       // Update the traffic data
-      console.log('received traffic msg !!! + ' + data.normal.toString());
+      console.log('received traffic msg !!! + ' + data.normal);
 
       const td = this.state.trafficData;
       const temp = td.connections[0].metrics.normal;
