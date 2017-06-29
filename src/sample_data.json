@@ -9,7 +9,7 @@
     },
     {
       "renderer": "region",
-      "name": "us-east-1",
+      "name": "Host-0",
       "maxVolume": 5000,
       "class": "normal",
       "updated": 1466838546805,
@@ -20,7 +20,7 @@
           "class": "normal"
         },
         {
-          "name": "proxy-prod",
+          "name": "Site-0",
           "renderer": "focusedChild",
           "class": "normal"
         }
@@ -28,10 +28,10 @@
       "connections": [
         {
           "source": "INTERNET",
-          "target": "proxy-prod",
+          "target": "Site-0",
           "metrics": {
-            "danger": 116.524,
-            "normal": 15598.906
+            "danger": 5,
+            "normal": 0
           },
           "class": "normal"
         }
@@ -41,10 +41,10 @@
   "connections": [
     {
       "source": "INTERNET",
-      "target": "us-east-1",
+      "target": "Host-0",
       "metrics": {
-        "normal": 26037.626,
-        "danger": 92.37
+        "normal": 40,
+        "danger": 0
       },
       "notices": [
       ],
