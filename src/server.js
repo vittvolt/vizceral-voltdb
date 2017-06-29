@@ -99,6 +99,8 @@ function callProc() {
     let k;
     let sum = 0;
     for (k = 0; k < val.length; k++) {
+      console.log('host_id: ' + val[k].HOST_ID + ' site_id: ' + val[k].SITE_ID + ' invocations: ' + val[k].INVOCATIONS +
+                  ' procedure: ' + val[k].PROCEDURE);
       sum += val[k].INVOCATIONS;
     }
     let normal_flow = sum - trafficData.normal;
