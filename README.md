@@ -4,3 +4,5 @@
 ## Introduction
 
 This is a traffic flow visualization app for VoltDB based on Vizceral from Netflix.
+
+See https://github.com/Netflix/vizceral-example for the original example.
