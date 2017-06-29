@@ -10,7 +10,7 @@
     {
       "renderer": "region",
       "name": "us-east-1",
-      "maxVolume": 50000,
+      "maxVolume": 5000,
       "class": "normal",
       "updated": 1466838546805,
       "nodes": [

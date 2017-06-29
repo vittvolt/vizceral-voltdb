@@ -78,19 +78,19 @@ function eventListener(code, event, message) {
 }
 
 function callProc() {
-  var selectProc = new VoltProcedure('sel', []);
+  // var selectProc = new VoltProcedure('sel', []);
   var statsProc = new VoltProcedure('@Statistics', ['string', 'int']);
-  var query = selectProc.getQuery();
+  // var query = selectProc.getQuery();
   var statsQuery = statsProc.getQuery();
   statsQuery.setParameters(["PROCEDURE", 0]); // host number given as 2nd parameter
 
-  client.callProcedure(query, function initVoter(code, event, results) {
-    var val = results.table[0];
-    util.log('Initialized app for ' + JSON.stringify(val).toString() + ' candidates.');
-    // trafficData.normal = val[0].ID;
-    // trafficData.danger = val[0].A;
-    io.emit('time', { time: new Date().toJSON() });
-  });
+  // client.callProcedure(query, function initVoter(code, event, results) {
+  //   var val = results.table[0];
+  //   util.log('Initialized app for ' + JSON.stringify(val).toString() + ' candidates.');
+  //   // trafficData.normal = val[0].ID;
+  //   // trafficData.danger = val[0].A;
+  //   io.emit('time', { time: new Date().toJSON() });
+  // });
 
   client.callProcedure(statsQuery, function initVoter(code, event, results) {
     var val = results.table[0];
