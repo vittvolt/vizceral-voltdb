@@ -194,12 +194,24 @@ class TrafficFlow extends React.Component {
 
     socket.on('traffic', function(data) {
       // Update the traffic data
-      console.log('received traffic msg !!! + ' + data.normal);
+      console.log('received traffic msg !!!');
+      console.log(JSON.stringify(data));
+      console.log('state trafficData: ');
+      console.log(JSON.stringify(this.state.trafficData));
 
       const td = this.state.trafficData;
-      const temp = td.connections[0].metrics.normal;
-      td.connections[0].metrics.normal = data.normal;
-      td.connections[0].metrics.danger = data.danger;
+      td.connections[0].metrics.normal = data.hostsData[0];
+      td.connections[1].metrics.normal = data.hostsData[1];
+      td.connections[2].metrics.normal = data.hostsData[2];
+
+      for (let i = 1; i < td.nodes.length; i++) {
+        for (let j = 0; j < td.nodes[1].connections.length; j++) {
+          console.log("i: " + i + " j: " + j);
+          console.log(td.nodes[i]);
+          td.nodes[i].connections[j].metrics.normal = data.sitesData[i - 1][j];
+        }
+      }
+
       td.secret = 3;  // well, this is a hack
 
       this.setState({ trafficData: td });
@@ -210,6 +222,8 @@ class TrafficFlow extends React.Component {
     socket.on('time', function(data) {
       console.log(data.time);
     }.bind(this));
+
+    console.log(JSON.stringify(this.state.trafficData));
   }
 
   componentWillUnmount () {
@@ -373,9 +387,10 @@ class TrafficFlow extends React.Component {
       };
     }
 
+    // <Button onClick={this.buttonFuck} >Come Fuck Around !</Button>
+
     return (
       <div className="vizceral-container">
-        <Button onClick={this.buttonFuck} >Come Fuck Around !</Button>
 
         { this.state.redirectedFrom ?
           <Alert onDismiss={this.dismissAlert}>

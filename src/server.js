@@ -19,15 +19,11 @@ var client = new VoltClient(configs);
 var num = 1000;
 
 // Store the traffic from a stats table in db
-var trafficData = {
-  normal: 26037,
-  danger: 92
-};
+var trafficData_hosts = [0, 0, 0];
+var trafficData_hosts_diff = [0, 0, 0];
 
-var trafficData_diff = {
-  normal: 1,
-  danger: 1
-}
+var trafficData_sites = [[0,0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0,0]];
+var trafficData_sites_diff = [[0,0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0,0]];
 
 function voltinit() {
   // VoltDB js test
@@ -96,23 +92,37 @@ function callProc() {
     var val = results.table[0];
 
     // Traverse through the stats for each site on the specified host
-    let k;
-    let sum = 0;
-    for (k = 0; k < val.length; k++) {
+    // Format: [{HOST_ID: ... , SITE_ID : ... , INVOCATIONS : ... ...}, ...]
+    for (let k = 0; k < val.length; k++) {
       console.log('host_id: ' + val[k].HOST_ID + ' site_id: ' + val[k].SITE_ID + ' invocations: ' + val[k].INVOCATIONS +
                   ' procedure: ' + val[k].PROCEDURE);
-      sum += val[k].INVOCATIONS;
+      let hostId = val[k].HOST_ID;
+      let siteId = val[k].SITE_ID;
+      let d = val[k].INVOCATIONS;
+      trafficData_hosts_diff[hostId] += d;
+      trafficData_sites_diff[hostId][siteId] += d;
     }
-    let normal_flow = sum - trafficData.normal;
 
-    console.log('diff: ' + normal_flow);
+    let temp_hosts = [0, 0, 0];
+    let temp_sites = [[0,0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0,0]];
 
-    trafficData_diff.normal = (normal_flow > 5) ? normal_flow : 5;
-    io.emit('traffic', trafficData_diff);
-    trafficData.normal = sum;
-    trafficData.danger = 5;
-    trafficData_diff.normal = 5;
-    trafficData_diff.danger = 0;
+    // Reset the diff results, update the accumulated results
+    for (let i = 0; i < trafficData_hosts_diff.length; i++) {
+      temp_hosts[i] = trafficData_hosts_diff[i] - trafficData_hosts[i];
+      trafficData_hosts[i] = trafficData_hosts_diff[i];
+      trafficData_hosts_diff[i] = 0;
+    }
+    for (let i = 0; i < trafficData_sites_diff.length; i++) {
+      for (let j = 0; j < trafficData_sites_diff[0].length; j++) {
+        temp_sites[i][j] = trafficData_sites_diff[i][j] - trafficData_sites[i][j];
+        trafficData_sites[i][j] = trafficData_sites_diff[i][j];
+        trafficData_sites_diff[i][j] = 0;
+      }
+    }
+
+    io.emit('traffic', { hostsData: temp_hosts, sitesData: temp_sites });
+
+
   });
 }
 
