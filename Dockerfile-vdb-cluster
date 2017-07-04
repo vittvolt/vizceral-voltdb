@@ -1,0 +1,14 @@
+# VoltDB on top of Docker base JDK8 images
+FROM vdb-ubuntu-base:latest
+RUN apt update && \
+    apt install -y sudo && \
+    sudo apt -y install ant build-essential ant-optional default-jdk python cmake \
+    valgrind ntp ccache git-arch git-completion git-core git-svn git-doc \
+    git-email python-httplib2 python-setuptools python-dev
+WORKDIR /home
+COPY voltdb voltdb
+WORKDIR /home/voltdb
+RUN ant clean && ant
+WORKDIR /home/voltdb/bin
+RUN ./voltdb init --force
+CMD ./voltdb start
